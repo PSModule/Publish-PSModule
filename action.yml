@@ -8,10 +8,10 @@ inputs:
   message:
     description: 'A message to test with.'
     required: false
-    default: "Hello World!"
+    default: 'Hello World!'
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Run Publish-Module
       shell: pwsh
@@ -20,13 +20,13 @@ runs:
 
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
-        $inputs = @{
+        $params = @{
             Message               = '${{ inputs.message }}'
         }
-        $inputs.GetEnumerator() | Sort-Object -Property Name
+        $params.GetEnumerator() | Sort-Object -Property Name
 
         Write-Output '-------------------------------------------'
 
-        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @Params
+        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @params
 
         Write-Output '::endgroup::'
