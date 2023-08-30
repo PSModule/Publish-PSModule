@@ -9,6 +9,10 @@ inputs:
     description: 'A message to test with.'
     required: false
     default: 'Hello World!'
+  verbose:
+    description: 'Enable verbose output.'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -22,6 +26,7 @@ runs:
         Write-Output 'Action inputs:'
         $params = @{
             Message               = '${{ inputs.message }}'
+            Verbose               = [System.Convert]::ToBoolean('${{ inputs.verbose }}')
         }
         $params.GetEnumerator() | Sort-Object -Property Name
 
