@@ -1,0 +1,32 @@
+name: 'Publish-Module'
+description: 'Publish a PowerShell module to the PowerShell Gallery'
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  message:
+    description: 'A message to test with.'
+    required: false
+    default: "Hello World!"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Publish-Module
+      shell: pwsh
+      run: |
+        Write-Output '::group::Publish-Module'
+
+        Write-Output '-------------------------------------------'
+        Write-Output 'Action inputs:'
+        $inputs = @{
+            Message               = '${{ inputs.message }}'
+        }
+        $inputs.GetEnumerator() | Sort-Object -Property Name
+
+        Write-Output '-------------------------------------------'
+
+        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @Params
+
+        Write-Output '::endgroup::'
