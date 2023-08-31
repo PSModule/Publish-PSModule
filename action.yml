@@ -8,6 +8,9 @@ inputs:
   APIKey:
     description: 'API Key for the PowerShell Gallery.'
     required: true
+  Path:
+    description: 'Path to the module to publish.'
+    required: true
   Verbose:
     description: 'Enable verbose output.'
     required: false
