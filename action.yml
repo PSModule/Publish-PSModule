@@ -5,11 +5,10 @@ branding:
   color: blue
 
 inputs:
-  message:
-    description: 'A message to test with.'
-    required: false
-    default: 'Hello World!'
-  verbose:
+  APIKey:
+    description: 'API Key for the PowerShell Gallery.'
+    required: true
+  Verbose:
     description: 'Enable verbose output.'
     required: false
     default: 'false'
@@ -20,13 +19,15 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
+        '${{ inputs }}' | ConvertFrom-Json | ConvertTo-Json -Depth 100 | Write-Output
+        
         Write-Output '::group::Publish-Module'
 
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
-            Message = '${{ inputs.message }}'
-            Verbose = [System.Convert]::ToBoolean('${{ inputs.verbose }}')
+            APIKey  = '${{ secrets.APIKey }}'
+            Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
         }
         $params.GetEnumerator() | Sort-Object -Property Name
 
