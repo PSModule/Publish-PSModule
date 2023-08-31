@@ -21,7 +21,7 @@ runs:
       run: |
         @'
         ${{toJSON(inputs)}}
-        '@ | ConvertFrom-Json | ConvertTo-Json -Depth 100 | Write-Output
+        '@ | ConvertFrom-Json | Write-Output
 
         Write-Output '::group::Publish-Module'
 
