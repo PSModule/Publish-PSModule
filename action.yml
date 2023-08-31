@@ -19,20 +19,19 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        $inputs = @'
-        ${{toJSON(inputs)}}
-        '@ | ConvertFrom-Json -AsHashtable
-
-        $inputs
-
+        
         Write-Output '::group::Publish-Module'
 
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
-        $inputs.GetEnumerator() | Sort-Object -Property Name
+        $params = @{
+            APIKey  = '${{ inputs.APIKey }}'
+            Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
+        }
+        $params.GetEnumerator() | Sort-Object -Property Name
 
         Write-Output '-------------------------------------------'
 
-        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @inputs
+        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @params
 
         Write-Output '::endgroup::'
