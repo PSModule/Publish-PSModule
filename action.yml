@@ -19,6 +19,7 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
+        # Inline script
         Write-Output '::group::Environment'
           Write-Output '-------------------------------------------'
           Write-Output 'Environment variables:'
