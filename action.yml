@@ -29,7 +29,7 @@ runs:
           Get-Location
           Write-Output '-------------------------------------------'
           Write-Output 'Directory contents:'
-          Get-ChildItem . | Select-Object -ExpandProperty FullName | Sort-Object
+          Get-ChildItem . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object
           Write-Output '-------------------------------------------'
         Write-Output '::endgroup::'
 
