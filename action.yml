@@ -19,9 +19,7 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        $inputs = @'
-        ${{toJSON(inputs)}}
-        '@ | ConvertFrom-Json -AsHashtable
+        $inputs = @'${{toJSON(inputs)}}'@ | ConvertFrom-Json -AsHashtable
 
         $inputs
 
@@ -29,14 +27,10 @@ runs:
 
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
-        $params = @{
-            APIKey  = '${{ inputs.APIKey }}'
-            Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
-        }
-        $params.GetEnumerator() | Sort-Object -Property Name
+        $inputs.GetEnumerator() | Sort-Object -Property Name
 
         Write-Output '-------------------------------------------'
 
-        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @params
+        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @inputs
 
         Write-Output '::endgroup::'
