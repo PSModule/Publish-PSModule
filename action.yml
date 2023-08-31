@@ -20,13 +20,13 @@ runs:
       shell: pwsh
       run: |
         '${{ inputs }}' | ConvertFrom-Json | ConvertTo-Json -Depth 100 | Write-Output
-        
+
         Write-Output '::group::Publish-Module'
 
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
-            APIKey  = '${{ secrets.APIKey }}'
+            APIKey  = '${{ inputs.APIKey }}'
             Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
         }
         $params.GetEnumerator() | Sort-Object -Property Name
