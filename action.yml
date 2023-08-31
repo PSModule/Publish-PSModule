@@ -19,9 +19,11 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        @'
+        $inputs = @'
         ${{toJSON(inputs)}}
-        '@ | ConvertFrom-Json | Write-Output
+        '@ | ConvertFrom-Json -AsHashtable
+
+        $inputs
 
         Write-Output '::group::Publish-Module'
 
