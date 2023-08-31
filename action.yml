@@ -19,7 +19,7 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        '${{ inputs }}' | ConvertFrom-Json | ConvertTo-Json -Depth 100 | Write-Output
+        toJSON('${{ inputs }}') | ConvertFrom-Json | ConvertTo-Json -Depth 100 | Write-Output
 
         Write-Output '::group::Publish-Module'
 
