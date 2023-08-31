@@ -1,7 +1,9 @@
 ﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [string] $APIKey
+    [string] $APIKey,
+    [Parameter(Mandatory)]
+    [string] $Path
 )
 $Task = ($MyInvocation.MyCommand.Name).split('.')[0]
 
@@ -14,8 +16,6 @@ Write-Verbose "$Task`: Bump module version -> module metadata: Update-ModuleMeta
 Write-Verbose "$Task`: Publish docs to GitHub Pages"
 Write-Verbose "$Task`: Update docs path: Update-ModuleMetadata"
 Write-Verbose "$Task`: Publish module to PowerShell Gallery using [$APIKey]"
-Publish-Module -Path "src/$ModuleName" -NuGetApiKey $APIKey -Verbose -WhatIf
+Publish-Module -Path $Path -NuGetApiKey $APIKey -Verbose -WhatIf
 
 Write-Verbose "$Task`: Stopping..."
-
-
