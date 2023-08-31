@@ -34,6 +34,9 @@ runs:
           Write-Output 'Directory contents:'
           Get-ChildItem . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object
           Write-Output '-------------------------------------------'
+          Write-Output 'PSModules:'
+          Get-Module -ListAvailable | select Name, Version, ModuleBase | Sort-Object ModuleBase
+          Write-Output '-------------------------------------------'
         Write-Output '::endgroup::'
 
         Write-Output '::group::Publish-Module'
