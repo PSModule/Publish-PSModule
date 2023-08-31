@@ -19,7 +19,9 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        $inputs = @'${{toJSON(inputs)}}'@ | ConvertFrom-Json -AsHashtable
+        $inputs = @'
+        ${{toJSON(inputs)}}
+        '@ | ConvertFrom-Json -AsHashtable
 
         $inputs
 
