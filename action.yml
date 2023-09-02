@@ -8,9 +8,6 @@ inputs:
   APIKey:
     description: 'API Key for the PowerShell Gallery.'
     required: true
-  Path:
-    description: 'Path to the module to publish.'
-    required: true
   Verbose:
     description: 'Enable verbose output.'
     required: false
@@ -22,48 +19,15 @@ runs:
     - name: Run Publish-Module
       shell: pwsh
       run: |
-        # Inline script
-        Write-Output '::group::Environment'
-          Write-Output '-------------------------------------------'
-          Write-Output 'Environment variables:'
-          Get-ChildItem Env: | Sort-Object -Property Name
-          Write-Output '-------------------------------------------'
-          Write-Output 'Current directory:'
-          Get-Location
-          Write-Output '-------------------------------------------'
-          Write-Output 'Directory contents:'
-          Get-ChildItem . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object
-          Write-Output '-------------------------------------------'
-          Write-Output 'PSModules:'
-          Get-Module -ListAvailable | select Name, Version, ModuleBase | Sort-Object ModuleBase
-          Write-Output '-------------------------------------------'
-        Write-Output '::endgroup::'
-
         Write-Output '::group::Publish-Module'
-
-          Write-Output '-------------------------------------------'
-          Write-Output 'Action inputs:'
-          $params = @{
-              APIKey  = '${{ inputs.APIKey }}'
-              Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
-          }
-          $params.GetEnumerator() | Sort-Object -Property Name
-
-          Write-Output '-------------------------------------------'
-
-          . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @params
-
-        Write-Output '::endgroup::'
-
-        Write-Output '::group::Environment'
-          Write-Output '-------------------------------------------'
-          Write-Output 'Environment variables:'
-          Get-ChildItem Env: | Sort-Object -Property Name
-          Write-Output '-------------------------------------------'
-          Write-Output 'Current directory:'
-          Get-Location
-          Write-Output '-------------------------------------------'
-          Write-Output 'Directory contents:'
-          Get-ChildItem . | Select-Object -ExpandProperty FullName | Sort-Object
-          Write-Output '-------------------------------------------'
+        Write-Output '-------------------------------------------'
+        Write-Output 'Action inputs:'
+        $params = @{
+            APIKey  = '${{ inputs.APIKey }}'
+            Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
+        }
+        $params.GetEnumerator() | Sort-Object -Property Name
+        Write-Output '-------------------------------------------'
+        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" @params
+        Write-Output '-------------------------------------------'
         Write-Output '::endgroup::'

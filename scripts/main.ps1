@@ -1,9 +1,7 @@
 ﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [string] $APIKey,
-    [Parameter(Mandatory)]
-    [string] $Path
+    [string] $APIKey
 )
 $Task = ($MyInvocation.MyCommand.Name).split('.')[0]
 
