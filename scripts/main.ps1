@@ -3,6 +3,17 @@ param(
     [Parameter(Mandatory)]
     [string] $APIKey
 )
+
+$task = New-Object System.Collections.Generic.List[string]
+$task.Add('Publish-Module')
+Write-Output "::group::[$($task -join '] - [')] - Starting..."
+$task.Add('Install-Prerequisites')
+Write-Output "::group::[$($task -join '] - [')]"
+Write-Verbose "[$($task -join '] - [')] - [$_]"
+
+
+
+
 $Task = 'Publish-Module'
 
 Write-Verbose "$Task`: Starting..."

@@ -20,7 +20,7 @@ runs:
       shell: pwsh
       run: |
         # Publish-Module
-        Write-Output '::group::[Publish-Module] - Initialize'
+        Write-Output '::group::[Publish-Module] - Initializing...'
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
