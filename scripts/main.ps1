@@ -53,7 +53,9 @@ Write-Output "::group::[$($task -join '] - [')]"
 Write-Output "::group::[$($task -join '] - [')] - Do something"
 
 Write-Verbose "[$($task -join '] - [')] - [] - Publish module to PowerShell Gallery using [$APIKey]"
+<#
 Publish-Module -Path $Path -NuGetApiKey $APIKey -Verbose -WhatIf
+#>
 
 Write-Verbose "[$($task -join '] - [')] - [] - Doing something"
 Write-Output "::group::[$($task -join '] - [')] - Done"
