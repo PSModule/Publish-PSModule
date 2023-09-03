@@ -3,29 +3,66 @@ param(
     [Parameter(Mandatory)]
     [string] $APIKey
 )
-
 $task = New-Object System.Collections.Generic.List[string]
+#region Publish-Module
 $task.Add('Publish-Module')
 Write-Output "::group::[$($task -join '] - [')] - Starting..."
-$task.Add('Install-Prerequisites')
+
+
+
+########################
+# Gather some basic info
+########################
+
+
+
+#region Generate-Version
+$task.Add('Generate-Version')
 Write-Output "::group::[$($task -join '] - [')]"
-Write-Verbose "[$($task -join '] - [')] - [$_]"
+Write-Output "::group::[$($task -join '] - [')] - Do something"
+
+Write-Verbose "[$($task -join '] - [')] - [] - Generate version"
+Write-Verbose "[$($task -join '] - [')] - [] - Generate pre-release version if not on main"
+Write-Verbose "[$($task -join '] - [')] - [] - Create new release with version (prerelease)"
+Write-Verbose "[$($task -join '] - [')] - [] - Bump module version -> module metadata: Update-ModuleMetadata"
+
+Write-Output "::group::[$($task -join '] - [')] - Done"
+$task.RemoveAt($task.Count - 1)
+#endregion Generate-Version
 
 
 
+#region Publish-Docs
+$task.Add('Publish-Docs')
+Write-Output "::group::[$($task -join '] - [')]"
+Write-Output "::group::[$($task -join '] - [')] - Do something"
 
-$Task = 'Publish-Module'
-
-Write-Verbose "$Task`: Starting..."
-
-Write-Verbose "$Task`: Generate version"
-Write-Verbose "$Task`: Generate pre-release version if not on main"
-Write-Verbose "$Task`: Create new release with version (prerelease)"
-Write-Verbose "$Task`: Bump module version -> module metadata: Update-ModuleMetadata"
-Write-Verbose "$Task`: Publish docs to GitHub Pages"
-Write-Verbose "$Task`: Update docs path: Update-ModuleMetadata"
+Write-Verbose "[$($task -join '] - [')] - [] - Publish docs to GitHub Pages"
+Write-Verbose "[$($task -join '] - [')] - [] - Update docs path: Update-ModuleMetadata"
 # What about updateable help? https://learn.microsoft.com/en-us/powershell/scripting/developer/help/supporting-updatable-help?view=powershell-7.3
-Write-Verbose "$Task`: Publish module to PowerShell Gallery using [$APIKey]"
+
+Write-Output "::group::[$($task -join '] - [')] - Done"
+$task.RemoveAt($task.Count - 1)
+#endregion Publish-Docs
+
+
+
+#region Publsih-ToPSGallery
+$task.Add('Publsih-ToPSGallery')
+Write-Output "::group::[$($task -join '] - [')]"
+Write-Output "::group::[$($task -join '] - [')] - Do something"
+
+Write-Verbose "[$($task -join '] - [')] - [] - Publish module to PowerShell Gallery using [$APIKey]"
 Publish-Module -Path $Path -NuGetApiKey $APIKey -Verbose -WhatIf
 
-Write-Verbose "$Task`: Stopping..."
+Write-Verbose "[$($task -join '] - [')] - [] - Doing something"
+Write-Output "::group::[$($task -join '] - [')] - Done"
+$task.RemoveAt($task.Count - 1)
+#endregion Publsih-ToPSGallery
+
+
+
+$task.RemoveAt($task.Count - 1)
+Write-Output "::group::[$($task -join '] - [')] - Stopping..."
+Write-Output '::endgroup::'
+#endregion Publish-Module
