@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)]
     [string] $APIKey
 )
-$Task = ($MyInvocation.MyCommand.Name).split('.')[0]
+$Task = 'Publish-Module'
 
 Write-Verbose "$Task`: Starting..."
 
