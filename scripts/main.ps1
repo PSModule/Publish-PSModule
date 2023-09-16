@@ -35,13 +35,13 @@ foreach ($module in $moduleFolders) {
     [Version]$newVersion = '0.0.0'
 
     try {
-        $onlineVersion = [Version](Find-Module $moduleName).Version
+        $onlineVersion = [Version](Find-Module $moduleName -Verbose:$false).Version
     } catch {
         $onlineVersion = $newVersion
         Write-Warning "Could not find module online. Using [$($onlineVersion.ToString())]"
     }
     Write-Warning "Online: [$($onlineVersion.ToString())]"
-    $manifestVersion = [Version](Test-ModuleManifest $manifestFilePath).Version
+    $manifestVersion = [Version](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
     Write-Warning "Manifest: [$($manifestVersion.ToString())]"
 
     Write-Verbose "branch is: [$env:GITHUB_REF_NAME]"
