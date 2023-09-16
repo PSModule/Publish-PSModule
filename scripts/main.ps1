@@ -67,11 +67,11 @@ foreach ($module in $moduleFolders) {
 
     if ($env:GITHUB_REF_NAME -ne 'main') {
         Write-Verbose "prerelease is: [$env:GITHUB_REF_NAME]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $env:GITHUB_REF_NAME -ErrorAction Continue -Verbose:$false -WhatIf:$WhatIf
+        Update-ModuleManifest -Path $manifestFilePath -Prerelease $env:GITHUB_REF_NAME -ErrorAction Continue -Verbose:$false
     }
 
     Write-Verbose "[$($task -join '] - [')] - [] - Bump module version -> module metadata: Update-ModuleMetadata"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue -Verbose:$false -WhatIf:$WhatIf
+    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue -Verbose:$false
 
     Write-Output "::group::[$($task -join '] - [')] - Done"
     $task.RemoveAt($task.Count - 1)
@@ -96,7 +96,7 @@ foreach ($module in $moduleFolders) {
     Write-Output "::group::[$($task -join '] - [')] - Do something"
 
     Write-Verbose "[$($task -join '] - [')] - [] - Publish module to PowerShell Gallery using [$APIKey]"
-    Publish-Module -Path "$module" -NuGetApiKey $APIKey -WhatIf:$WhatIf
+    Publish-Module -Path "$module" -NuGetApiKey $APIKey
 
     Write-Verbose "[$($task -join '] - [')] - [] - Doing something"
     Write-Output "::group::[$($task -join '] - [')] - Done"
