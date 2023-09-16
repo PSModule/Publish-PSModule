@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+﻿[CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Mandatory)]
     [string] $APIKey
@@ -7,6 +7,8 @@ $task = New-Object System.Collections.Generic.List[string]
 #region Publish-Module
 $task.Add('Release-Module')
 Write-Output "::group::[$($task -join '] - [')] - Starting..."
+
+Import-Module PackageManagement, PowerShellGet -Verbose:$false -ErrorAction Stop
 
 ########################
 # Gather some basic info
@@ -65,11 +67,11 @@ foreach ($module in $moduleFolders) {
 
     if ($env:GITHUB_REF_NAME -ne 'main') {
         Write-Verbose "prerelease is: [$env:GITHUB_REF_NAME]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $env:GITHUB_REF_NAME -ErrorAction Continue
+        Update-ModuleManifest -Path $manifestFilePath -Prerelease $env:GITHUB_REF_NAME -ErrorAction Continue -Verbose:$false
     }
 
     Write-Verbose "[$($task -join '] - [')] - [] - Bump module version -> module metadata: Update-ModuleMetadata"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue
+    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue -Verbose:$false
 
     Write-Output "::group::[$($task -join '] - [')] - Done"
     $task.RemoveAt($task.Count - 1)
@@ -94,7 +96,7 @@ foreach ($module in $moduleFolders) {
     Write-Output "::group::[$($task -join '] - [')] - Do something"
 
     Write-Verbose "[$($task -join '] - [')] - [] - Publish module to PowerShell Gallery using [$APIKey]"
-    Publish-Module -Path "$module" -NuGetApiKey $APIKey -Verbose -WhatIf
+    Publish-Module -Path "$module" -NuGetApiKey $APIKey
 
     Write-Verbose "[$($task -join '] - [')] - [] - Doing something"
     Write-Output "::group::[$($task -join '] - [')] - Done"
