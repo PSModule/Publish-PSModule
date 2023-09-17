@@ -72,14 +72,13 @@ foreach ($module in $moduleFolders) {
         Write-Verbose "[$($task -join '] - [')] - Prerelease is: [$prerelease]"
         if ($newVersion -ge [version]'1.0.0') {
             Write-Verbose "[$($task -join '] - [')] - Version is greater than 1.0.0 -> Update-ModuleManifest with prerelease [$prerelease]"
-            Update-ModuleManifest -Path $manifestFilePath -Prerelease $prerelease -ErrorAction Continue -Verbose:$false
+            Update-ModuleManifest -Path $manifestFilePath -Prerelease $prerelease -ErrorAction Continue
+            gh release edit $newVersion -tag "$newVersion-$prerelease" --prerelease
         }
-        gh release edit $newVersion --prerelease
     }
 
-
     Write-Verbose "[$($task -join '] - [')] - Bump module version -> module metadata: Update-ModuleMetadata"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue -Verbose:$false
+    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue
 
     Write-Output "::group::[$($task -join '] - [')] - Done"
     $task.RemoveAt($task.Count - 1)
