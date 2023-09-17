@@ -29,10 +29,7 @@ foreach ($module in $moduleFolders) {
     #region Generate-Version
     $task.Add('Generate-Version')
     Write-Output "::group::[$($task -join '] - [')]"
-    Write-Verbose "[$($task -join '] - [')] - [] - Generate version"
-    Write-Verbose "[$($task -join '] - [')] - [] - Generate pre-release version if not on main"
-    Write-Verbose "[$($task -join '] - [')] - [] - Create new release with version (prerelease)"
-
+    Write-Verbose "[$($task -join '] - [')] - Generate version"
 
     [Version]$newVersion = '0.0.0'
 
@@ -65,12 +62,23 @@ foreach ($module in $moduleFolders) {
     [Version]$newVersion = [version]::new($newVersionMajor, $newVersionMinor, $newVersionBuild)
     Write-Warning "newVersion: [$($newVersion.ToString())]"
 
+    Write-Verbose "[$($task -join '] - [')] - Create draft release with version"
+    gh release create $newVersion --title $newVersion --generate-notes --draft --target $env:GITHUB_REF_NAME
+
     if ($env:GITHUB_REF_NAME -ne 'main') {
-        Write-Verbose "prerelease is: [$env:GITHUB_REF_NAME]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $env:GITHUB_REF_NAME -ErrorAction Continue -Verbose:$false
+        Write-Verbose "[$($task -join '] - [')] - Not on main, but on [$env:GITHUB_REF_NAME]"
+        Write-Verbose "[$($task -join '] - [')] - Generate pre-release version"
+        $prerelease = $env:GITHUB_REF_NAME -replace '[^a-zA-Z0-9]', ''
+        Write-Verbose "[$($task -join '] - [')] - Prerelease is: [$prerelease]"
+        if ($newVersion -ge [version]'1.0.0') {
+            Write-Verbose "[$($task -join '] - [')] - Version is greater than 1.0.0 -> Update-ModuleManifest with prerelease [$prerelease]"
+            Update-ModuleManifest -Path $manifestFilePath -Prerelease $prerelease -ErrorAction Continue -Verbose:$false
+        }
+        gh release edit $newVersion --prerelease
     }
 
-    Write-Verbose "[$($task -join '] - [')] - [] - Bump module version -> module metadata: Update-ModuleMetadata"
+
+    Write-Verbose "[$($task -join '] - [')] - Bump module version -> module metadata: Update-ModuleMetadata"
     Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue -Verbose:$false
 
     Write-Output "::group::[$($task -join '] - [')] - Done"
@@ -82,8 +90,8 @@ foreach ($module in $moduleFolders) {
     Write-Output "::group::[$($task -join '] - [')]"
     Write-Output "::group::[$($task -join '] - [')] - Do something"
 
-    Write-Verbose "[$($task -join '] - [')] - [] - Publish docs to GitHub Pages"
-    Write-Verbose "[$($task -join '] - [')] - [] - Update docs path: Update-ModuleMetadata"
+    Write-Verbose "[$($task -join '] - [')] - Publish docs to GitHub Pages"
+    Write-Verbose "[$($task -join '] - [')] - Update docs path: Update-ModuleMetadata"
     # What about updateable help? https://learn.microsoft.com/en-us/powershell/scripting/developer/help/supporting-updatable-help?view=powershell-7.3
 
     Write-Output "::group::[$($task -join '] - [')] - Done"
@@ -95,10 +103,13 @@ foreach ($module in $moduleFolders) {
     Write-Output "::group::[$($task -join '] - [')]"
     Write-Output "::group::[$($task -join '] - [')] - Do something"
 
-    Write-Verbose "[$($task -join '] - [')] - [] - Publish module to PowerShell Gallery using [$APIKey]"
+    Write-Verbose "[$($task -join '] - [')] - Publish module to PowerShell Gallery using [$APIKey]"
     Publish-Module -Path "$module" -NuGetApiKey $APIKey
 
-    Write-Verbose "[$($task -join '] - [')] - [] - Doing something"
+    Write-Verbose "[$($task -join '] - [')] - Publish GitHub release for [$newVersion]"
+    gh release edit $newVersion --draft=false
+
+    Write-Verbose "[$($task -join '] - [')] - Doing something"
     Write-Output "::group::[$($task -join '] - [')] - Done"
     $task.RemoveAt($task.Count - 1)
     #endregion Publish-ToPSGallery
