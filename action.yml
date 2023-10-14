@@ -1,5 +1,5 @@
-name: 'Publish-Module'
-description: 'Publish a PowerShell module to the PowerShell Gallery'
+name: 'Release-PSModule'
+description: 'Release/Publish a PowerShell module to the PowerShell Gallery'
 branding:
   icon: activity
   color: blue
@@ -20,16 +20,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Run Publish-Module
+    - name: Run Release-PSModule
       shell: pwsh
       run: |
-        # Publish-Module
+        # Release-PSModule
 
-        Write-Output '::group::[Build-Module] - Initializing...'
-        Install-Module -Name PSModule.FX -Force -Verbose
-        Write-Output '::endgroup::'
-
-        Write-Output '::group::[Publish-Module] - Initializing...'
+        Write-Output '::group::[Release-PSModule] - Initializing...'
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
