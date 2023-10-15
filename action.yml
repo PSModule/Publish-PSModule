@@ -25,7 +25,7 @@ runs:
       run: |
         # Release-PSModule
 
-        Write-Output '::group::[Release-PSModule] - Initializing...'
+        Write-Output '::group::Initializing...'
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
