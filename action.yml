@@ -5,6 +5,10 @@ branding:
   color: blue
 
 inputs:
+  Name:
+    description: 'The name of the module to build.'
+    required: false
+    default: '*'
   APIKey:
     description: 'API Key for the PowerShell Gallery.'
     required: true
@@ -29,6 +33,7 @@ runs:
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
+            Name    = '${{ inputs.Name }}'
             APIKey  = '${{ inputs.APIKey }}'
             Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
             WhatIf  = [System.Convert]::ToBoolean('${{ inputs.WhatIf }}')
