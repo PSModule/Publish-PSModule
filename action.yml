@@ -1,5 +1,5 @@
-name: 'Release-PSModule'
-description: 'Release/Publish a PowerShell module to the PowerShell Gallery'
+name: 'Publish-PSModule'
+description: 'Publish a PowerShell module to the PowerShell Gallery'
 branding:
   icon: activity
   color: blue
@@ -24,10 +24,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Run Release-PSModule
+    - name: Run Publish-PSModule
       shell: pwsh
       run: |
-        # Release-PSModule
+        # Publish-PSModule
 
         Write-Output '::group::Initializing...'
         Write-Output '-------------------------------------------'
@@ -41,4 +41,4 @@ runs:
         $params.GetEnumerator() | Sort-Object -Property Name
         Write-Output '::endgroup::'
 
-        Release-PSModule @params
+        Publish-PSModule @params
