@@ -29,7 +29,7 @@ runs:
       run: |
         # Publish-PSModule
 
-        Write-Output '::group::Initializing...'
+        Write-Host '::group::Initializing...'
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
@@ -39,6 +39,6 @@ runs:
             WhatIf  = [System.Convert]::ToBoolean('${{ inputs.WhatIf }}')
         }
         $params.GetEnumerator() | Sort-Object -Property Name
-        Write-Output '::endgroup::'
+        Write-Host '::endgroup::'
 
         Publish-PSModule @params
