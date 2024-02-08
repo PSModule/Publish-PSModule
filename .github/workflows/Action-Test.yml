@@ -21,3 +21,5 @@ jobs:
 
       - name: Test local action
         uses: ./
+        with:
+          APIKey: ${{ secrets.APIKEY }}
