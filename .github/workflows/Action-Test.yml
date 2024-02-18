@@ -1,12 +1,19 @@
-name: Verify Action
+name: Action-Test
 
 on:
-  workflow_call:
   push:
+    branches:
+      - main
     paths:
       - action.yml
       - .github/workflows/Action-Test.yml
-      - outputs/**
+      - scripts/**
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - action.yml
+      - .github/workflows/Action-Test.yml
       - scripts/**
 
 jobs:
@@ -25,3 +32,5 @@ jobs:
         with:
           APIKey: ${{ secrets.APIKEY }}
           Name: 'PSModuleTest'
+        env:
+          GH_TOKEN: ${{ github.token }} # Used for GitHub CLI authentication
