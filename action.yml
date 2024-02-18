@@ -26,6 +26,11 @@ runs:
   steps:
     - name: Run Publish-PSModule
       shell: pwsh
+      env:
+        Name: ${{ inputs.Name }}
+        APIKey: ${{ inputs.APIKey }}
+        Verbose: ${{ inputs.Verbose }}
+        WhatIf: ${{ inputs.WhatIf }}
       run: |
         # Publish-PSModule
 
@@ -33,10 +38,10 @@ runs:
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
-            Name    = '${{ inputs.Name }}'
-            APIKey  = '${{ inputs.APIKey }}'
-            Verbose = [System.Convert]::ToBoolean('${{ inputs.Verbose }}')
-            WhatIf  = [System.Convert]::ToBoolean('${{ inputs.WhatIf }}')
+            Name    = $env:Name
+            APIKey  = $env:APIKey
+            Verbose = $env:Verbose -eq 'true'
+            WhatIf  = $env:WhatIf -eq 'true'
         }
         $params.GetEnumerator() | Sort-Object -Property Name
         Write-Output '::endgroup::'
