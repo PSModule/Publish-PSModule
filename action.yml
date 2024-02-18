@@ -5,6 +5,10 @@ branding:
   color: blue
 
 inputs:
+  Name:
+    description: Name of the module to publish.
+    required: false
+    default: '*'
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
@@ -23,6 +27,7 @@ runs:
     - name: Run Publish-PSModule
       shell: pwsh
       env:
+        Name: ${{ inputs.Name }}
         APIKey: ${{ inputs.APIKey }}
         Verbose: ${{ inputs.Verbose }}
         WhatIf: ${{ inputs.WhatIf }}

@@ -2,6 +2,7 @@ Write-Output '::group::Initializing...'
 Write-Output '-------------------------------------------'
 Write-Output 'Action inputs:'
 $params = @{
+    Name    = $env:Name
     APIKey  = $env:APIKey
     Verbose = $env:Verbose -eq 'true'
     WhatIf  = $env:WhatIf -eq 'true'
