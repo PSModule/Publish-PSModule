@@ -1,35 +1,35 @@
-name: 'Publish-PSModule'
-description: 'Publish a PowerShell module to the PowerShell Gallery'
+name: Publish-PSModule
+description: Publish a PowerShell module to the PowerShell Gallery.
 branding:
   icon: activity
   color: blue
 
 inputs:
   Name:
-    description: 'The name of the module to build.'
+    description: The name of the module to build.
     required: false
     default: '*'
   APIKey:
-    description: 'API Key for the PowerShell Gallery.'
+    description: API Key for the PowerShell Gallery.
     required: true
   Verbose:
-    description: 'Enable verbose output.'
+    description: Enable verbose output.
     required: false
     default: 'true'
   WhatIf:
-    description: 'Run in WhatIf mode.'
+    description: Run in WhatIf mode.
     required: false
     default: 'false'
 
 runs:
-  using: 'composite'
+  using: composite
   steps:
     - name: Run Publish-PSModule
       shell: pwsh
       run: |
         # Publish-PSModule
 
-        Write-Host '::group::Initializing...'
+        Write-Output '::group::Initializing...'
         Write-Output '-------------------------------------------'
         Write-Output 'Action inputs:'
         $params = @{
@@ -39,6 +39,6 @@ runs:
             WhatIf  = [System.Convert]::ToBoolean('${{ inputs.WhatIf }}')
         }
         $params.GetEnumerator() | Sort-Object -Property Name
-        Write-Host '::endgroup::'
+        Write-Output '::endgroup::'
 
         Publish-PSModule @params

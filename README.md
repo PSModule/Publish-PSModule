@@ -1,5 +1,16 @@
-# Release-Module
-Action that is used to create a release and publish a PowerShell module to the PowerShell Gallery + documentation to GitHub Pages.
+# Publish-PSModule
+
+Create a GitHub release and publishes a PowerShell module to the PowerShell Gallery.
+
+## Specifications and practices
+
+## How it works
+
+## Usage
+
+## Example
+
+## Permissions
 
 ## Tools
 
