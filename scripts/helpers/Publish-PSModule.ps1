@@ -90,14 +90,14 @@ function Publish-PSModule {
         $prerelease = $env:GITHUB_REF_NAME -replace '[^a-zA-Z0-9]', ''
         Write-Verbose "[$($task -join '] - [')] - Prerelease is: [$prerelease]"
         if ($newVersion -ge [version]'1.0.0') {
-            Write-Verbose "[$($task -join '] - [')] - Version is greater than 1.0.0 -> Update-ModuleManifest with prerelease [$prerelease]"
-            Update-ModuleManifest -Path $manifestFilePath -Prerelease $prerelease -ErrorAction Continue
+            Write-Verbose "[$($task -join '] - [')] - Version is greater than 1.0.0 -> Update-PSModuleManifest with prerelease [$prerelease]"
+            Update-PSModuleManifest -Path $manifestFilePath -Prerelease $prerelease -ErrorAction Continue
             gh release edit $newVersion -tag "$newVersion-$prerelease" --prerelease
         }
     }
 
     Write-Verbose "[$($task -join '] - [')] - Bump module version -> module metadata: Update-ModuleMetadata"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue
+    Update-PSModuleManifest -Path $manifestFilePath -ModuleVersion $newVersion -ErrorAction Continue
 
     Start-LogGroup "[$($task -join '] - [')] - Done"
     $task.RemoveAt($task.Count - 1)
