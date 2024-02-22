@@ -25,7 +25,7 @@ function Publish-PSModule {
         # The path to the documentation to process.
         [Parameter(Mandatory)]
         [string] $DocsPath,
-        
+
         # The API key for the destination repository.
         [Parameter(Mandatory)]
         [string] $APIKey
@@ -123,7 +123,7 @@ function Publish-PSModule {
     Start-LogGroup "[$($task -join '] - [')] - Do something"
 
     Write-Verbose "[$($task -join '] - [')] - Publish module to PowerShell Gallery using [$APIKey]"
-    Publish-Module -Path $ModulePath -NuGetApiKey $APIKey
+    Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey -Verbose
 
     Write-Verbose "[$($task -join '] - [')] - Publish GitHub release for [$newVersion]"
     gh release edit $newVersion --draft=false
@@ -137,5 +137,4 @@ function Publish-PSModule {
     Start-LogGroup "[$($task -join '] - [')] - Stopping..."
     Stop-LogGroup
     #endregion Publish-Module
-
 }

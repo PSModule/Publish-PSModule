@@ -30,6 +30,4 @@ runs:
         ModulePath: ${{ inputs.ModulePath }}
         DocsPath: ${{ inputs.DocsPath }}
         APIKey: ${{ inputs.APIKey }}
-        Verbose: ${{ inputs.Verbose }}
-        WhatIf: ${{ inputs.WhatIf }}
       run: . "$env:GITHUB_ACTION_PATH\scripts\main.ps1"
