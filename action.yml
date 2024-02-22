@@ -8,11 +8,10 @@ inputs:
   Name:
     description: Name of the module to publish.
     required: false
-    default: '*'
   ModulePath:
     description: Path to the module to publish.
     required: false
-    default: outputs/module
+    default: outputs/modules
   DocsPath:
     description: Path to the module documentation.
     required: false
@@ -20,14 +19,6 @@ inputs:
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
-  Verbose:
-    description: Enable verbose output.
-    required: false
-    default: 'true'
-  WhatIf:
-    description: Run in WhatIf mode.
-    required: false
-    default: 'false'
 
 runs:
   using: composite
