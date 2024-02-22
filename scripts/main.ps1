@@ -7,14 +7,16 @@ Write-Output '##[endgroup]'
 
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 
-$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:Path $name
+$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
+$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath $name
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
 }
 
 $params = @{
-    Name   = $name
-    Path   = $modulePath
-    APIKey = $env:APIKey
+    Name       = $name
+    ModulePath = $modulePath
+    DocsPath   = $docsPath
+    APIKey     = $env:APIKey
 }
 Publish-PSModule @params

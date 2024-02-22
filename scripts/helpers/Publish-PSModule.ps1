@@ -20,8 +20,12 @@ function Publish-PSModule {
 
         # The path to the module to process.
         [Parameter(Mandatory)]
-        [string] $Path,
+        [string] $ModulePath,
 
+        # The path to the documentation to process.
+        [Parameter(Mandatory)]
+        [string] $DocsPath,
+        
         # The API key for the destination repository.
         [Parameter(Mandatory)]
         [string] $APIKey
@@ -35,9 +39,9 @@ function Publish-PSModule {
     # Gather some basic info
     ########################
 
-    Add-PSModulePath -Path (Split-Path -Path $Path -Parent)
+    Add-PSModulePath -Path (Split-Path -Path $ModulePath -Parent)
 
-    $manifestFilePath = "$Path\$Name.psd1"
+    $manifestFilePath = "$ModulePath\$Name.psd1"
     $task.Add($Name)
     Start-LogGroup "[$($task -join '] - [')] - Starting..."
 
@@ -102,8 +106,7 @@ function Publish-PSModule {
     #region Publish-Docs
     $task.Add('Publish-Docs')
     Start-LogGroup "[$($task -join '] - [')]"
-    Start-LogGroup "[$($task -join '] - [')] - Do something"
-
+    Start-LogGroup "[$($task -join '] - [')] - Docs - [$DocsPath]"
     Write-Verbose "[$($task -join '] - [')] - Publish docs to GitHub Pages"
     Write-Verbose "[$($task -join '] - [')] - Update docs path: Update-ModuleMetadata"
 
@@ -120,7 +123,7 @@ function Publish-PSModule {
     Start-LogGroup "[$($task -join '] - [')] - Do something"
 
     Write-Verbose "[$($task -join '] - [')] - Publish module to PowerShell Gallery using [$APIKey]"
-    Publish-Module -Path $Path -NuGetApiKey $APIKey
+    Publish-Module -Path $ModulePath -NuGetApiKey $APIKey
 
     Write-Verbose "[$($task -join '] - [')] - Publish GitHub release for [$newVersion]"
     gh release edit $newVersion --draft=false
