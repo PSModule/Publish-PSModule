@@ -8,9 +8,12 @@ Write-Output '##[endgroup]'
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 
 $modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
-$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath $name
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
+}
+$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath $name
+if (-not (Test-Path -Path $docsPath)) {
+    throw "Documentation path [$docsPath] does not exist."
 }
 
 $params = @{
