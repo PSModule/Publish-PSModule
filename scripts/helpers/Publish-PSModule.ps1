@@ -44,6 +44,7 @@ function Publish-PSModule {
     $manifestFilePath = "$ModulePath\$Name.psd1"
     $task.Add($Name)
     Start-LogGroup "[$($task -join '] - [')] - Starting..."
+    Write-Verbose "Module manifest file path: [$manifestFilePath]"
 
     #region Generate-Version
     $task.Add('Generate-Version')
