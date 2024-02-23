@@ -39,7 +39,7 @@
 
     Add-PSModulePath -Path (Split-Path -Path $ModulePath -Parent)
 
-    $manifestFilePath = "$ModulePath\$Name.psd1"
+    $manifestFilePath = Join-Path $ModulePath "$Name.psd1"
     $task.Add($Name)
     Start-LogGroup "[$($task -join '] - [')] - Starting..."
     Write-Verbose "Module manifest file path: [$manifestFilePath]"
