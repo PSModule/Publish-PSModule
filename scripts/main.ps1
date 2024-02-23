@@ -22,4 +22,4 @@ $params = @{
     DocsPath   = $docsPath
     APIKey     = $env:APIKey
 }
-Publish-PSModule @params
+Publish-PSModule @params -Verbose

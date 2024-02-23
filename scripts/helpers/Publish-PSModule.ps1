@@ -1,6 +1,4 @@
-﻿#TODO: Requires -Modules platyPS, PowerShellGet, PackageManagement
-
-function Publish-PSModule {
+﻿function Publish-PSModule {
     <#
         .SYNOPSIS
         Publishes a module to the PowerShell Gallery and GitHub Pages.
