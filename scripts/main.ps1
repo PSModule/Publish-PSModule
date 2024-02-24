@@ -14,6 +14,8 @@ Write-Verbose "GITHUB_WORKSPACE:  [$env:GITHUB_WORKSPACE]"
 
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 Write-Verbose "Module name:       [$name]"
+Write-Verbose "Module path:       [$env:ModulePath]"
+Write-Verbose "Docs path:         [$env:DocsPath]"
 
 $modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
 Write-Verbose "Module path:       [$modulePath]"
