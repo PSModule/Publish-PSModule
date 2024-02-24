@@ -12,7 +12,7 @@ Performs tests on a module.
 
 ## SYNTAX
 
-```
+```powershell
 Test-PSModuleTest [-Name] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
@@ -22,7 +22,7 @@ Test-PSModuleTest [-Name] <String> [-ProgressAction <ActionPreference>] [<Common
 ## EXAMPLES
 
 ### EXAMPLE 1
-```
+```powershell
 Test-PSModuleTest -Name 'World'
 ```
 
