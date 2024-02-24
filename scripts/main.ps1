@@ -13,8 +13,6 @@ Write-Verbose "Name:              [$env:GITHUB_ACTION_INPUT_Name]"
 Write-Verbose "GITHUB_REPOSITORY: [$env:GITHUB_REPOSITORY]"
 Write-Verbose "GITHUB_WORKSPACE:  [$env:GITHUB_WORKSPACE]"
 
-$env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
-Set-GitHubEnv -Name 'GITHUB_REPOSITORY_NAME' -Value $env:GITHUB_REPOSITORY_NAME
 $name = ($env:GITHUB_ACTION_INPUT_Name | IsNullOrEmpty) ? $env:GITHUB_REPOSITORY_NAME : $env:GITHUB_ACTION_INPUT_Name
 Write-Verbose "Module name:       [$name]"
 Write-Verbose "Module path:       [$env:GITHUB_ACTION_INPUT_ModulePath]"
