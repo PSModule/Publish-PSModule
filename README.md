@@ -24,6 +24,7 @@ Writing docs:
 - <https://learn.microsoft.com/en-us/powershell/utility-modules/platyps/overview?view=ps-modules>
 - <https://go.microsoft.com/fwlink/?LinkID=123415>
 - <https://help.github.com/categories/writing-on-github/>
+- [What about PowerShell updateable help?](https://learn.microsoft.com/en-us/powershell/scripting/developer/help/supporting-updatable-help?view=powershell-7.3)
 
 Publishing docs
 - GitHub Pages
@@ -37,5 +38,4 @@ Signing code:
 Versioning:
 - [Auto-Release](https://github.com/marketplace/actions/auto-release)
 - [Compatability shields](https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x#tag-your-package-with-the-compatible-pseditions-and-platforms)
-What about updateable help?
-https://learn.microsoft.com/en-us/powershell/scripting/developer/help/supporting-updatable-help?view=powershell-7.3
+
