@@ -8,30 +8,34 @@ Get-ChildItem -Path (Join-Path -Path $env:GITHUB_ACTION_PATH -ChildPath 'scripts
     ForEach-Object { Write-Verbose "[$($_.FullName)]"; . $_.FullName }
 Stop-LogGroup
 
-Write-Verbose "Name:              [$env:Name]"
+Start-LogGroup 'Loading inputs'
+Write-Verbose "Name:              [$env:GITHUB_ACTION_INPUT_Name]"
 Write-Verbose "GITHUB_REPOSITORY: [$env:GITHUB_REPOSITORY]"
 Write-Verbose "GITHUB_WORKSPACE:  [$env:GITHUB_WORKSPACE]"
 
-$name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
+$env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
+Set-GitHubEnv -Name 'GITHUB_REPOSITORY_NAME' -Value $env:GITHUB_REPOSITORY_NAME
+$name = ($env:GITHUB_ACTION_INPUT_Name | IsNullOrEmpty) ? $env:GITHUB_REPOSITORY_NAME : $env:GITHUB_ACTION_INPUT_Name
 Write-Verbose "Module name:       [$name]"
-Write-Verbose "Module path:       [$env:ModulePath]"
-Write-Verbose "Doc path:          [$env:DocPath]"
+Write-Verbose "Module path:       [$env:GITHUB_ACTION_INPUT_ModulePath]"
+Write-Verbose "Doc path:          [$env:GITHUB_ACTION_INPUT_DocsPath]"
 
-$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
+$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:GITHUB_ACTION_INPUT_ModulePath $name
 Write-Verbose "Module path:       [$modulePath]"
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
 }
-$docPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocPath $name
-Write-Verbose "Docs path:         [$docPath]"
-if (-not (Test-Path -Path $docPath)) {
-    throw "Documentation path [$docPath] does not exist."
+$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:GITHUB_ACTION_INPUT_DocsPath $name
+Write-Verbose "Docs path:         [$docsPath]"
+if (-not (Test-Path -Path $docsPath)) {
+    throw "Documentation path [$docsPath] does not exist."
 }
+Stop-LogGroup
 
 $params = @{
     Name       = $name
     ModulePath = $modulePath
-    DocsPath   = $docPath
-    APIKey     = $env:APIKey
+    DocsPath   = $docsPath
+    APIKey     = $env:GITHUB_ACTION_INPUT_APIKey
 }
 Publish-PSModule @params -Verbose

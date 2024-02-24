@@ -12,7 +12,7 @@ inputs:
     description: Path to the module to publish.
     required: false
     default: outputs/modules
-  DocPath:
+  DocsPath:
     description: Path to the module documentation.
     required: false
     default: outputs/docs
@@ -26,10 +26,10 @@ runs:
     - name: Run Publish-PSModule
       shell: pwsh
       env:
-        Name: ${{ inputs.Name }}
-        ModulePath: ${{ inputs.ModulePath }}
-        DocPath: ${{ inputs.DocPath }}
-        APIKey: ${{ inputs.APIKey }}
+        GITHUB_ACTION_INPUT_Name: ${{ inputs.Name }}
+        GITHUB_ACTION_INPUT_ModulePath: ${{ inputs.ModulePath }}
+        GITHUB_ACTION_INPUT_DocsPath: ${{ inputs.DocsPath }}
+        GITHUB_ACTION_INPUT_APIKey: ${{ inputs.APIKey }}
       run: |
         # Publish-PSModule
         Write-Host '::group::Loading libraries'
