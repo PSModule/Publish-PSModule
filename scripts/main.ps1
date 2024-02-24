@@ -14,12 +14,12 @@ Write-Verbose "GITHUB_REPOSITORY: [$($env:GITHUB_REPOSITORY)]"
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 Write-Verbose "Module name:       [$name]"
 
-$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
+$modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath, $name
 Write-Verbose "Module path:       [$modulePath]"
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
 }
-$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath $name
+$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath, $name
 Write-Verbose "Docs path:         [$docsPath]"
 if (-not (Test-Path -Path $docsPath)) {
     throw "Documentation path [$docsPath] does not exist."
