@@ -12,7 +12,7 @@ inputs:
     description: Path to the module to publish.
     required: false
     default: outputs/modules
-  DocsPath:
+  DocPath:
     description: Path to the module documentation.
     required: false
     default: outputs/docs
@@ -28,7 +28,7 @@ runs:
       env:
         Name: ${{ inputs.Name }}
         ModulePath: ${{ inputs.ModulePath }}
-        DocsPath: ${{ inputs.DocsPath }}
+        DocPath: ${{ inputs.DocPath }}
         APIKey: ${{ inputs.APIKey }}
       run: |
         # Publish-PSModule

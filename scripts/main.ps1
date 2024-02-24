@@ -15,23 +15,23 @@ Write-Verbose "GITHUB_WORKSPACE:  [$env:GITHUB_WORKSPACE]"
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 Write-Verbose "Module name:       [$name]"
 Write-Verbose "Module path:       [$env:ModulePath]"
-Write-Verbose "Docs path:         [$env:DocsPath]"
+Write-Verbose "Doc path:          [$env:DocPath]"
 
 $modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:ModulePath $name
 Write-Verbose "Module path:       [$modulePath]"
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
 }
-$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocsPath $name
-Write-Verbose "Docs path:         [$docsPath]"
-if (-not (Test-Path -Path $docsPath)) {
-    throw "Documentation path [$docsPath] does not exist."
+$docPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:DocPath $name
+Write-Verbose "Docs path:         [$docPath]"
+if (-not (Test-Path -Path $docPath)) {
+    throw "Documentation path [$docPath] does not exist."
 }
 
 $params = @{
     Name       = $name
     ModulePath = $modulePath
-    DocsPath   = $docsPath
+    DocsPath   = $docPath
     APIKey     = $env:APIKey
 }
 Publish-PSModule @params -Verbose
