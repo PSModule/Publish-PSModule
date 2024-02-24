@@ -1,9 +1,12 @@
-Write-Output '##[group]Loading helper scripts'
-Get-ChildItem -Path (Join-Path $env:GITHUB_ACTION_PATH 'scripts' 'helpers') -Filter '*.ps1' -Recurse | ForEach-Object {
-    Write-Host "[$($_.FullName)]"
-    . $_.FullName
-}
-Write-Output '##[endgroup]'
+#REQUIRES -Modules Utilities
+
+[CmdletBinding()]
+param()
+
+Start-LogGroup 'Loading helper scripts'
+Get-ChildItem -Path (Join-Path -Path $env:GITHUB_ACTION_PATH -ChildPath 'scripts' 'helpers') -Filter '*.ps1' -Recurse |
+    ForEach-Object { Write-Verbose "[$($_.FullName)]"; . $_.FullName }
+Stop-LogGroup
 
 $name = [string]::IsNullOrEmpty($env:Name) ? $env:GITHUB_REPOSITORY -replace '.+/' : $env:Name
 

@@ -35,5 +35,7 @@ Signing code:
 - <https://learn.microsoft.com/en-us/powershell/scripting/wmf/whats-new/new-updated-cmdlets#catalog-cmdlets>
 
 Versioning:
-- <https://semver.org/>
-- <https://github.com/GitTools/GitVersion>
+- [Auto-Release](https://github.com/marketplace/actions/auto-release)
+- [Compatability shields](https://learn.microsoft.com/en-us/powershell/gallery/concepts/publishing-guidelines?view=powershellget-3.x#tag-your-package-with-the-compatible-pseditions-and-platforms)
+What about updateable help?
+https://learn.microsoft.com/en-us/powershell/scripting/developer/help/supporting-updatable-help?view=powershell-7.3
