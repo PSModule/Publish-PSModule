@@ -260,10 +260,10 @@ function Publish-PSModule {
     Start-LogGroup 'Update module manifest'
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$prereleaseName]"
-        if ($newVersion -ge [PSSemVer]'1.0.0') {
-            Write-Verbose "Version is greater than 1.0.0 -> Update-PSModuleManifest with prerelease [$prereleaseName]"
-            Update-ModuleManifest -Path $manifestFilePath -Prerelease $prereleaseName -ErrorAction Continue
-        }
+        # if ($newVersion -ge [PSSemVer]'1.0.0') {
+        #     Write-Verbose "Version is greater than 1.0.0 -> Update-PSModuleManifest with prerelease [$prereleaseName]"
+        Update-ModuleManifest -Path $manifestFilePath -Prerelease $prereleaseName -ErrorAction Continue
+        # }
     }
     Write-Verbose 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
