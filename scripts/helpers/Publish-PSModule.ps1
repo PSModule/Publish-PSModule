@@ -233,7 +233,8 @@ function Publish-PSModule {
 
     if ($createPrerelease) {
         Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
-        $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+        Write-Verbose ($releases | Where-Object { $_.tagName -like "*$prereleaseName*" } |
+                Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table -AutoSize | Out-String)
 
         $newVersion.Prerelease = $prereleaseName
         Write-Output "Partial new version: [$newVersion]"
@@ -277,18 +278,17 @@ function Publish-PSModule {
     Write-Output '-------------------------------------------------'
     Write-Output "New version:                    [$newVersion]"
     Write-Output '-------------------------------------------------'
-
     #endregion Calculate new version
 
     #region Update module manifest
     Start-LogGroup 'Update module manifest'
     Write-Verbose 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion
+    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
     Show-FileContent -Path $manifestFilePath
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease)
+        Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
         Show-FileContent -Path $manifestFilePath
     }
     Stop-LogGroup
