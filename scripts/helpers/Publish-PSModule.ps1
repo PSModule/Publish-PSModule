@@ -202,17 +202,14 @@ function Publish-PSModule {
     #region Calculate new version
     Start-LogGroup 'Calculate new version'
 
-    # - Mixed mode
-    #   - Take the highest version from GH, PSGallery and manifest
+    # - Mixed mode - Take the highest version from GH, PSGallery and manifest
     Write-Warning "PSGallery: [$($psGalleryVersion.ToString())]"
     Write-Warning "Manifest:  [$($manifestVersion.ToString())]"
     Write-Warning "GitHub:    [$($ghReleaseVersion.ToString())]"
     $newVersion = $psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1
 
-    # - GitHub mode
-    #   - Take the version number from the release
-    # - PSGallery mode
-    #   - Take the version number from the PSGallery
+    # - GitHub mode - Take the version number from the release
+    # - PSGallery mode - Take the version number from the PSGallery
 
     # - Increment based on label on PR
     $newVersion.Prefix = $versionPrefix
@@ -236,17 +233,44 @@ function Publish-PSModule {
 
     if ($createPrerelease) {
         Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
+        $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+
         $newVersion.Prerelease = $prereleaseName
         Write-Output "Partial new version: [$newVersion]"
 
         if ($datePrereleaseFormat | IsNotNullOrEmpty) {
             Write-Output "Using date-based prerelease: [$datePrereleaseFormat]."
-            $newVersion.Prerelease += ".$(Get-Date -Format $datePrereleaseFormat)"
+            $newVersion.Prerelease += "$(Get-Date -Format $datePrereleaseFormat)"
             Write-Output "Partial new version: [$newVersion]"
         }
 
         if ($incrementalPrerelease) {
-            $newVersion.BumpPrereleaseNumber()
+            # Find the latest prerelease version
+            $newVersionString = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
+
+            # PowerShell Gallery
+            $psGalleryPrereleases = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false -Version * -Prerelease
+            $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Version -like "$newVersionString" }
+            $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Prerelease -like "$prereleaseName*" }
+            $latestPSGalleryPrerelease = $psGalleryPrereleases.Prerelease | ForEach-Object {
+                [int]($_ -replace $prereleaseName)
+            } | Sort-Object | Select-Object -Last 1
+            Write-Output "PSGallery prerelease: [$latestPSGalleryPrerelease]"
+
+            # GitHub
+            $ghPrereleases = $releases | Where-Object { $_.tagName -like "*$newVersionString*" }
+            $ghPrereleases = $ghPrereleases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+            $latestGHPrereleases = $ghPrereleases.tagName | ForEach-Object {
+                $number = $_
+                $number = $number -replace '\.'
+                $number = ($number -split $prereleaseName, 2)[-1]
+                [int]$number
+            } | Sort-Object | Select-Object -Last 1
+            Write-Output "GitHub prerelease: [$latestGHPrereleases]"
+
+            $latestPrereleaseNumber = [Math]::Max($latestPSGalleryPrerelease, $latestGHPrereleases)
+            $latestPrereleaseNumber++
+            $newVersion.Prerelease += $latestPrereleaseNumber
         }
     }
     Stop-LogGroup
@@ -259,22 +283,17 @@ function Publish-PSModule {
     #region Update module manifest
     Start-LogGroup 'Update module manifest'
     if ($createPrerelease) {
-        Write-Verbose "Prerelease is: [$prereleaseName]"
-        # if ($newVersion -ge [PSSemVer]'1.0.0') {
-        #     Write-Verbose "Version is greater than 1.0.0 -> Update-PSModuleManifest with prerelease [$prereleaseName]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $prereleaseName -ErrorAction Continue
-        # }
+        Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
+        Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease)
+        Show-FileContent -Path $manifestFilePath
     }
     Write-Verbose 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -ErrorAction Continue
-    Stop-LogGroup
-
-    #region Format manifest file
-    Start-LogGroup 'Format manifest file - Before format'
+    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion
     Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
 
+    #region Format manifest file
     Start-LogGroup 'Format manifest file - Remove comments'
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
