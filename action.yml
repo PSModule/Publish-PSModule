@@ -19,6 +19,58 @@ inputs:
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
+  AutoCleanup:
+    description: Control wether to automatically delete the prerelease tags after the stable release is created.
+    required: false
+    default: 'true'
+  AutoPatching:
+    description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
+    required: false
+    default: 'true'
+  ConfigurationFile:
+    description: The path to the configuration file. Settings in the configuration file take precedence over the action inputs.
+    required: false
+    default: .github\auto-release.yml
+  CreateMajorTag:
+    description: Control wether to create a major tag when a pull request is merged into the main branch.
+    required: false
+    default: 'true'
+  CreateMinorTag:
+    description: Control wether to create a minor tag when a pull request is merged into the main branch.
+    required: false
+    default: 'true'
+  DatePrereleaseFormat:
+    description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
+    required: false
+    default: ''
+  IgnoreLabels:
+    description: A comma separated list of labels that do not trigger a release.
+    required: false
+    default: NoRelease
+  IncrementalPrerelease:
+    description: Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
+    required: false
+    default: 'true'
+  MajorLabels:
+    description: A comma separated list of labels that trigger a major release.
+    required: false
+    default: major, breaking
+  MinorLabels:
+    description: A comma separated list of labels that trigger a minor release.
+    required: false
+    default: minor, feature, improvement
+  PatchLabels:
+    description: A comma separated list of labels that trigger a patch release.
+    required: false
+    default: patch, fix, bug
+  VersionPrefix:
+    description: The prefix to use for the version number.
+    required: false
+    default: v
+  WhatIf:
+    description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -30,6 +82,19 @@ runs:
         GITHUB_ACTION_INPUT_ModulePath: ${{ inputs.ModulePath }}
         GITHUB_ACTION_INPUT_DocsPath: ${{ inputs.DocsPath }}
         GITHUB_ACTION_INPUT_APIKey: ${{ inputs.APIKey }}
+        GITHUB_ACTION_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
+        GITHUB_ACTION_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
+        GITHUB_ACTION_INPUT_ConfigurationFile: ${{ inputs.ConfigurationFile }}
+        GITHUB_ACTION_INPUT_CreateMajorTag: ${{ inputs.CreateMajorTag }}
+        GITHUB_ACTION_INPUT_CreateMinorTag: ${{ inputs.CreateMinorTag }}
+        GITHUB_ACTION_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
+        GITHUB_ACTION_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
+        GITHUB_ACTION_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
+        GITHUB_ACTION_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
+        GITHUB_ACTION_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
+        GITHUB_ACTION_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
+        GITHUB_ACTION_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
+        GITHUB_ACTION_INPUT_WhatIf: ${{ inputs.WhatIf }}
       run: |
         # Publish-PSModule
         . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" -Verbose
