@@ -311,7 +311,6 @@ function Publish-PSModule {
     Stop-LogGroup
     #endregion Format manifest file
 
-
     #endregion Update module manifest
 
     #region Create releases
