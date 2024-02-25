@@ -156,7 +156,7 @@ function Publish-PSModule {
     #endregion Get GitHub releases
 
     #region Get GitHub latest version
-    Start-LogGroup 'Get latest version'
+    Start-LogGroup 'Get GitHub latest version'
     $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
@@ -167,11 +167,11 @@ function Publish-PSModule {
         $ghReleaseVersion | Format-Table
         $ghReleaseVersion = $ghReleaseVersion.ToString()
     }
-    Stop-LogGroup
-
     Write-Output '-------------------------------------------------'
     Write-Output "Latest version:                 [$ghReleaseVersion]"
     Write-Output '-------------------------------------------------'
+    Stop-LogGroup
+
     #endregion Get GitHub latest version
 
     #region Get target location (PSGallery) latest version.
@@ -194,7 +194,7 @@ function Publish-PSModule {
         Write-Error "Module manifest file not found at [$manifestFilePath]"
         return
     }
-    $manifestVersion = [Version](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
+    $manifestVersion = [PSSemVer](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
     Write-Warning "Manifest version: [$($manifestVersion.ToString())]"
     Stop-LogGroup
     #endregion Get module manifest version.
@@ -261,7 +261,7 @@ function Publish-PSModule {
     Start-LogGroup 'Update module manifest'
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$prereleaseName]"
-        if ($newVersion -ge [version]'1.0.0') {
+        if ($newVersion -ge [PSSemVer]'1.0.0') {
             Write-Verbose "Version is greater than 1.0.0 -> Update-PSModuleManifest with prerelease [$prereleaseName]"
             Update-ModuleManifest -Path $manifestFilePath -Prerelease $prereleaseName -ErrorAction Continue
         }
