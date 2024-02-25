@@ -200,61 +200,60 @@ function Publish-PSModule {
     #endregion Get module manifest version.
 
     #region Calculate new version
-    if ($createPrerelease -or $createRelease -or $whatIf) {
-        Start-LogGroup 'Calculate new version'
+    Start-LogGroup 'Calculate new version'
 
-        # - Mixed mode
-        #   - Take the highest version from GH, PSGallery and manifest
-        Write-Warning "PSGallery: [$($psGalleryVersion.ToString())]"
-        Write-Warning "Manifest:  [$($manifestVersion.ToString())]"
-        Write-Warning "GitHub:    [$($ghReleaseVersion.ToString())]"
-        $newVersion = $psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1
+    # - Mixed mode
+    #   - Take the highest version from GH, PSGallery and manifest
+    Write-Warning "PSGallery: [$($psGalleryVersion.ToString())]"
+    Write-Warning "Manifest:  [$($manifestVersion.ToString())]"
+    Write-Warning "GitHub:    [$($ghReleaseVersion.ToString())]"
+    $newVersion = $psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1
 
-        # - GitHub mode
-        #   - Take the version number from the release
-        # - PSGallery mode
-        #   - Take the version number from the PSGallery
+    # - GitHub mode
+    #   - Take the version number from the release
+    # - PSGallery mode
+    #   - Take the version number from the PSGallery
 
-        # - Increment based on label on PR
-        $newVersion.Prefix = $versionPrefix
-        if ($majorRelease) {
-            Write-Output 'Incrementing major version.'
-            $newVersion.BumpMajor()
-        } elseif ($minorRelease) {
-            Write-Output 'Incrementing minor version.'
-            $newVersion.BumpMinor()
-        } elseif ($patchRelease -or $autoPatching) {
-            Write-Output 'Incrementing patch version.'
-            $newVersion.BumpPatch()
-        } else {
-            Write-Output 'Skipping release creation, exiting.'
-            return
-        }
+    # - Increment based on label on PR
+    $newVersion.Prefix = $versionPrefix
+    if ($majorRelease) {
+        Write-Output 'Incrementing major version.'
+        $newVersion.BumpMajor()
+    } elseif ($minorRelease) {
+        Write-Output 'Incrementing minor version.'
+        $newVersion.BumpMinor()
+    } elseif ($patchRelease -or $autoPatching) {
+        Write-Output 'Incrementing patch version.'
+        $newVersion.BumpPatch()
+    } else {
+        Write-Output 'Skipping release creation, exiting.'
+        return
+    }
 
-        # - Manifest mode
-        #   - Take the version number from the manifest directly
+    # - Manifest mode
+    #   - Take the version number from the manifest directly
+    Write-Output "Partial new version: [$newVersion]"
+
+    if ($createPrerelease) {
+        Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
+        $newVersion.Prerelease = $prereleaseName
         Write-Output "Partial new version: [$newVersion]"
 
-        if ($createPrerelease) {
-            Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
-            $newVersion.Prerelease = $prereleaseName
+        if ($datePrereleaseFormat | IsNotNullOrEmpty) {
+            Write-Output "Using date-based prerelease: [$datePrereleaseFormat]."
+            $newVersion.Prerelease += ".$(Get-Date -Format $datePrereleaseFormat)"
             Write-Output "Partial new version: [$newVersion]"
-
-            if ($datePrereleaseFormat | IsNotNullOrEmpty) {
-                Write-Output "Using date-based prerelease: [$datePrereleaseFormat]."
-                $newVersion.Prerelease += ".$(Get-Date -Format $datePrereleaseFormat)"
-                Write-Output "Partial new version: [$newVersion]"
-            }
-
-            if ($incrementalPrerelease) {
-                $newVersion.BumpPrereleaseNumber()
-            }
         }
-        Stop-LogGroup
-        Write-Output '-------------------------------------------------'
-        Write-Output "New version:                    [$newVersion]"
-        Write-Output '-------------------------------------------------'
+
+        if ($incrementalPrerelease) {
+            $newVersion.BumpPrereleaseNumber()
+        }
     }
+    Stop-LogGroup
+    Write-Output '-------------------------------------------------'
+    Write-Output "New version:                    [$newVersion]"
+    Write-Output '-------------------------------------------------'
+
     #endregion Calculate new version
 
     #region Update module manifest
