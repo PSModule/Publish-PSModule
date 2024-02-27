@@ -307,23 +307,23 @@ function Publish-PSModule {
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
-        Show-FileContent -Path $manifestFilePath
     }
 
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
-    $manifestContent = $manifestContent | ForEach-Object { $_.Trim() }
-    $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
+    $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
+    $manifestContent = $manifestContent | Where-Object { -not [string]::IsNullOrEmpty($_) }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
 
-    #TODO: Add way to normalize string arrays like filelist and command lists
-
+    $manifestContent = Get-Content -Path $manifestFilePath -Raw
+    $settings = (Join-Path -Path $PSScriptRoot 'PSScriptAnalyzer.Tests.psd1')
     Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
         Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
     Stop-LogGroup
 
+    #TODO: Add way to normalize string arrays like filelist and command lists
 
-    Start-LogGroup 'Module manifest - Result'
+    Start-LogGroup 'Format manifest file - Result'
     Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
     #endregion Format manifest file
