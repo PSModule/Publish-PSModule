@@ -1,11 +1,11 @@
 ---
 external help file: PSModuleTest-help.xml
-Module Name: PSModule.Publish
+Module Name: PSModule
 online version:
 schema: 2.0.0
 ---
 
-# Test-PSModuleTest
+# Test-PSModule
 
 ## SYNOPSIS
 Performs tests on a module.
@@ -13,7 +13,7 @@ Performs tests on a module.
 ## SYNTAX
 
 ```powershell
-Test-PSModuleTest [-Name] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Test-PSModule [-Name] <String> [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,7 +23,7 @@ Test-PSModuleTest [-Name] <String> [-ProgressAction <ActionPreference>] [<Common
 
 ### EXAMPLE 1
 ```powershell
-Test-PSModuleTest -Name 'World'
+Test-PSModule -Name 'World'
 ```
 
 "Hello, World!"
