@@ -18,7 +18,10 @@
     CmdletsToExport       = @()
     AliasesToExport       = ''
     ModuleList            = @()
-    FileList              = 'PSModule.Publish.psd1', 'PSModule.Publish.psm1'
+    FileList              = @(
+        'PSModule.Publish.psd1',
+        'PSModule.Publish.psm1'
+    )
     PrivateData           = @{
         PSData = @{
             Tags = 'PSEdition_Desktop', 'PSEdition_Core'

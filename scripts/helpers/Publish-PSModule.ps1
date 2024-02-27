@@ -312,7 +312,6 @@ function Publish-PSModule {
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
     $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
-    $manifestContent = $manifestContent | ForEach-Object { $_ -replace ',', ",$([System.Environment]::NewLine)" }
     $manifestContent = $manifestContent | Where-Object { -not [string]::IsNullOrEmpty($_) }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
 
@@ -321,8 +320,6 @@ function Publish-PSModule {
     Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
         Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
     Stop-LogGroup
-
-    #TODO: Add way to normalize string arrays like filelist and command lists
 
     Start-LogGroup 'Format manifest file - Result'
     Show-FileContent -Path $manifestFilePath
