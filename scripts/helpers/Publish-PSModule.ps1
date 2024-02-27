@@ -316,7 +316,7 @@ function Publish-PSModule {
     $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
 
-     #TODO: Add way to normalize string arrays like filelist and command lists
+    #TODO: Add way to normalize string arrays like filelist and command lists
 
     Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
         Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
