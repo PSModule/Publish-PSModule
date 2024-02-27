@@ -309,41 +309,21 @@ function Publish-PSModule {
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
         Show-FileContent -Path $manifestFilePath
     }
-    Stop-LogGroup
 
-    #region Format manifest file
-    Start-LogGroup 'Format manifest file - Remove comments'
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
+    $manifestContent = $manifestContent | ForEach-Object { $_.Trim() }
+    $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
 
-    Start-LogGroup 'Format manifest file - Removing trailing whitespace'
-    $manifestContent = Get-Content -Path $manifestFilePath
-    $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
-    $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
+     #TODO: Add way to normalize string arrays like filelist and command lists
 
-    Start-LogGroup 'Format manifest file - Remove blank lines'
-    $manifestContent = Get-Content -Path $manifestFilePath
-    $manifestContent = $manifestContent | Where-Object { -not [string]::IsNullOrEmpty($_) }
-    $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
-
-    Start-LogGroup 'Format manifest file - Format'
-    $manifestContent = Get-Content -Path $manifestFilePath -Raw
-    $settings = (Join-Path -Path $PSScriptRoot 'PSScriptAnalyzer.Tests.psd1')
     Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
         Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
 
-    #TODO: Add way to normalize string arrays like filelist and command lists
 
-    Start-LogGroup 'Format manifest file - Result'
+    Start-LogGroup 'Module manifest - Result'
     Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
     #endregion Format manifest file
