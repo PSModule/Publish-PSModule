@@ -132,7 +132,7 @@ function Publish-PSModule {
 
     $majorRelease = ($labels | Where-Object { $majorLabels -contains $_ }).Count -gt 0
     $minorRelease = ($labels | Where-Object { $minorLabels -contains $_ }).Count -gt 0 -and -not $majorRelease
-    $patchRelease = ($labels | Where-Object { $patchLabels -contains $_ }).Count -gt 0 -and -not $majorRelease -and -not $minorRelease
+    $patchRelease = (($labels | Where-Object { $patchLabels -contains $_ }).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
     Write-Output '-------------------------------------------------'
     Write-Output "Create a release:               [$createRelease]"
@@ -156,34 +156,40 @@ function Publish-PSModule {
     #endregion Get GitHub releases
 
     #region Get GitHub latest version
-    Start-LogGroup 'Get GitHub latest version'
+    Start-LogGroup 'Get latest version - GitHub Release'
     $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
     if ($ghReleaseVersionString | IsNotNullOrEmpty) {
-        $ghReleaseVersion = $ghReleaseVersionString | ConvertTo-SemVer
-        Write-Output '-------------------------------------------------'
-        Write-Output 'Latest version:'
-        $ghReleaseVersion | Format-Table
-        $ghReleaseVersion = $ghReleaseVersion.ToString()
+        $ghReleaseVersion = [PSSemVer]$ghReleaseVersionString
+    } else {
+        Write-Warning 'Could not find the latest release version. Using ''0.0.0'' as the version.'
+        $ghReleaseVersion = [PSSemVer]'0.0.0'
     }
-    Write-Output '-------------------------------------------------'
-    Write-Output "Latest version:                 [$ghReleaseVersion]"
-    Write-Output '-------------------------------------------------'
+    Write-Verbose '-------------------------------------------------'
+    Write-Verbose 'GitHub version:'
+    Write-Verbose ($ghReleaseVersion | Format-Table | Out-String)
+    Write-Verbose $ghReleaseVersion.ToString()
+    Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
 
     #endregion Get GitHub latest version
 
-    #region Get target location (PSGallery) latest version.
-    Start-LogGroup 'Get target location (PSGallery) latest version'
+    #region Get latest version - target location (PSGallery)
+    Start-LogGroup 'Get latest version - target location (PSGallery)'
     try {
         $psGalleryVersion = [PSSemVer](Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
     } catch {
-        Write-Warning 'Could not find module online.'
+        Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
+        $psGalleryVersion = [PSSemVer]'0.0.0'
     }
-    Write-Warning "Online: [$($psGalleryVersion.ToString())]"
+    Write-Verbose '-------------------------------------------------'
+    Write-Verbose 'PSGallery version:'
+    Write-Verbose ($psGalleryVersion | Format-Table | Out-String)
+    Write-Verbose $psGalleryVersion.ToString()
+    Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
-    #endregion Get target location (PSGallery) latest version.
+    #endregion Get latest version - target location (PSGallery)
 
     #region Get module manifest version.
     Start-LogGroup 'Get module manifest version'
@@ -194,8 +200,19 @@ function Publish-PSModule {
         Write-Error "Module manifest file not found at [$manifestFilePath]"
         return
     }
-    $manifestVersion = [PSSemVer](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
-    Write-Warning "Manifest version: [$($manifestVersion.ToString())]"
+    try {
+        $manifestVersion = [PSSemVer](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
+    } catch {
+        if ($manifestVersion | IsNullOrEmpty) {
+            Write-Warning 'Could not find the module version in the manifest. Using ''0.0.0'' as the version.'
+            $manifestVersion = [PSSemVer]'0.0.0'
+        }
+    }
+    Write-Verbose '-------------------------------------------------'
+    Write-Verbose 'Manifest version:'
+    Write-Verbose ($manifestVersion | Format-Table | Out-String)
+    Write-Verbose $manifestVersion.ToString()
+    Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
     #endregion Get module manifest version.
 
@@ -203,11 +220,10 @@ function Publish-PSModule {
     Start-LogGroup 'Calculate new version'
 
     # - Mixed mode - Take the highest version from GH, PSGallery and manifest
-    Write-Warning "PSGallery: [$($psGalleryVersion.ToString())]"
-    Write-Warning "Manifest:  [$($manifestVersion.ToString())]"
-    Write-Warning "GitHub:    [$($ghReleaseVersion.ToString())]"
-    $newVersion = $psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1
+    $newVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
 
+    Write-Verbose ($newVersion | Format-Table | Out-String)
+    Write-Verbose $newVersion.ToString()
     # - GitHub mode - Take the version number from the release
     # - PSGallery mode - Take the version number from the PSGallery
 
@@ -219,7 +235,7 @@ function Publish-PSModule {
     } elseif ($minorRelease) {
         Write-Output 'Incrementing minor version.'
         $newVersion.BumpMinor()
-    } elseif ($patchRelease -or $autoPatching) {
+    } elseif ($patchRelease) {
         Write-Output 'Incrementing patch version.'
         $newVersion.BumpPatch()
     } else {
@@ -275,9 +291,11 @@ function Publish-PSModule {
         }
     }
     Stop-LogGroup
-    Write-Output '-------------------------------------------------'
-    Write-Output "New version:                    [$newVersion]"
-    Write-Output '-------------------------------------------------'
+    Write-Verbose '-------------------------------------------------'
+    Write-Verbose 'New version:'
+    Write-Verbose ($newVersion | Format-Table | Out-String)
+    Write-Verbose $newVersion.ToString()
+    Write-Verbose '-------------------------------------------------'
     #endregion Calculate new version
 
     #region Update module manifest
@@ -289,41 +307,19 @@ function Publish-PSModule {
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
-        Show-FileContent -Path $manifestFilePath
     }
-    Stop-LogGroup
 
-    #region Format manifest file
-    Start-LogGroup 'Format manifest file - Remove comments'
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
-    $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
-
-    Start-LogGroup 'Format manifest file - Removing trailing whitespace'
-    $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
+    $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
 
-    Start-LogGroup 'Format manifest file - Remove blank lines'
-    $manifestContent = Get-Content -Path $manifestFilePath
-    $manifestContent = $manifestContent | Where-Object { -not [string]::IsNullOrEmpty($_) }
-    $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
-    Stop-LogGroup
-
-    Start-LogGroup 'Format manifest file - Format'
     $manifestContent = Get-Content -Path $manifestFilePath -Raw
     $settings = (Join-Path -Path $PSScriptRoot 'PSScriptAnalyzer.Tests.psd1')
     Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
         Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-    Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
-
-    #TODO: Add way to normalize string arrays like filelist and command lists
 
     Start-LogGroup 'Format manifest file - Result'
     Show-FileContent -Path $manifestFilePath

@@ -26,5 +26,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          Name: PSModuleTest
+          Name: PSModule.Publish
           APIKey: ${{ secrets.APIKEY }}

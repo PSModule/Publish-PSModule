@@ -1,5 +1,5 @@
 @{
-    RootModule            = 'PSModuleTest.psm1'
+    RootModule            = 'PSModule.Publish.psm1'
     ModuleVersion         = '0.0.1'
     CompatiblePSEditions  = 'Core', 'Desktop'
     GUID                  = '567bd93a-a0d5-4715-8cdf-6b5089d73065'
@@ -18,7 +18,10 @@
     CmdletsToExport       = @()
     AliasesToExport       = ''
     ModuleList            = @()
-    FileList              = 'PSModuleTest.psd1', 'PSModuleTest.psm1'
+    FileList              = @(
+        'PSModule.Publish.psd1',
+        'PSModule.Publish.psm1'
+    )
     PrivateData           = @{
         PSData = @{
             Tags = 'PSEdition_Desktop', 'PSEdition_Core'

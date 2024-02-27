@@ -1,6 +1,6 @@
 ---
 external help file: PSModuleTest-help.xml
-Module Name: PSModuleTest
+Module Name: PSModule.Publish
 online version:
 schema: 2.0.0
 ---
