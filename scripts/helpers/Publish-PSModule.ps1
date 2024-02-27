@@ -161,7 +161,7 @@ function Publish-PSModule {
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
     if ($ghReleaseVersionString | IsNotNullOrEmpty) {
-        $ghReleaseVersion = $ghReleaseVersionString | ConvertTo-SemVer
+        $ghReleaseVersion = [PSSemVer]$ghReleaseVersionString
         Write-Output '-------------------------------------------------'
         Write-Output 'Latest version:'
         $ghReleaseVersion | Format-Table
