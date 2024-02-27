@@ -312,7 +312,7 @@ function Publish-PSModule {
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
     $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
-    $manifestContent = $manifestContent | Where-Object { -not [string]::IsNullOrEmpty($_) }
+    $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
     $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
 
     $manifestContent = Get-Content -Path $manifestFilePath -Raw
