@@ -132,7 +132,7 @@ function Publish-PSModule {
 
     $majorRelease = ($labels | Where-Object { $majorLabels -contains $_ }).Count -gt 0
     $minorRelease = ($labels | Where-Object { $minorLabels -contains $_ }).Count -gt 0 -and -not $majorRelease
-    $patchRelease = ($labels | Where-Object { $patchLabels -contains $_ }).Count -gt 0 -and -not $majorRelease -and -not $minorRelease
+    $patchRelease = (($labels | Where-Object { $patchLabels -contains $_ }).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
     Write-Output '-------------------------------------------------'
     Write-Output "Create a release:               [$createRelease]"
@@ -178,10 +178,11 @@ function Publish-PSModule {
     Start-LogGroup 'Get target location (PSGallery) latest version'
     try {
         $psGalleryVersion = [PSSemVer](Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
+        Write-Warning "Online: [$($psGalleryVersion.ToString())]"
     } catch {
         Write-Warning 'Could not find module online.'
+        $psGalleryVersion = [PSSemVer]'0.0.0'
     }
-    Write-Warning "Online: [$($psGalleryVersion.ToString())]"
     Stop-LogGroup
     #endregion Get target location (PSGallery) latest version.
 
@@ -219,7 +220,7 @@ function Publish-PSModule {
     } elseif ($minorRelease) {
         Write-Output 'Incrementing minor version.'
         $newVersion.BumpMinor()
-    } elseif ($patchRelease -or $autoPatching) {
+    } elseif ($patchRelease) {
         Write-Output 'Incrementing patch version.'
         $newVersion.BumpPatch()
     } else {
