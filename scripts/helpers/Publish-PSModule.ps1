@@ -168,7 +168,8 @@ function Publish-PSModule {
     }
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'GitHub version:'
-    Write-Verbose ($ghReleaseVersion | Out-String)
+    Write-Verbose ($ghReleaseVersion | Format-Table | Out-String)
+    Write-Verbose $ghReleaseVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
 
@@ -184,7 +185,8 @@ function Publish-PSModule {
     }
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'PSGallery version:'
-    Write-Verbose ($psGalleryVersion | Out-String)
+    Write-Verbose ($psGalleryVersion | Format-Table | Out-String)
+    Write-Verbose $psGalleryVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
     #endregion Get latest version - target location (PSGallery)
@@ -208,7 +210,8 @@ function Publish-PSModule {
     }
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'Manifest version:'
-    Write-Verbose ($manifestVersion | Out-String)
+    Write-Verbose ($manifestVersion | Format-Table | Out-String)
+    Write-Verbose $manifestVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
     #endregion Get module manifest version.
@@ -219,8 +222,8 @@ function Publish-PSModule {
     # - Mixed mode - Take the highest version from GH, PSGallery and manifest
     $newVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
 
-    Write-Verbose ($newVersion | Out-String)
-
+    Write-Verbose ($newVersion | Format-Table | Out-String)
+    Write-Verbose $newVersion.ToString()
     # - GitHub mode - Take the version number from the release
     # - PSGallery mode - Take the version number from the PSGallery
 
@@ -290,7 +293,8 @@ function Publish-PSModule {
     Stop-LogGroup
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'New version:'
-    Write-Verbose ($newVersion | Out-String)
+    Write-Verbose ($newVersion | Format-Table | Out-String)
+    Write-Verbose $newVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     #endregion Calculate new version
 
