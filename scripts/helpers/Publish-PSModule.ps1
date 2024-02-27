@@ -168,7 +168,7 @@ function Publish-PSModule {
         $ghReleaseVersion = $ghReleaseVersion.ToString()
     }
     Write-Output '-------------------------------------------------'
-    Write-Output "Latest version:                 [$ghReleaseVersion]"
+    Write-Output "Latest GitHub version:            [$ghReleaseVersion]"
     Write-Output '-------------------------------------------------'
     Stop-LogGroup
 
@@ -178,7 +178,6 @@ function Publish-PSModule {
     Start-LogGroup 'Get target location (PSGallery) latest version'
     try {
         $psGalleryVersion = [PSSemVer](Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
-        Write-Warning "Online: [$($psGalleryVersion.ToString())]"
     } catch {
         Write-Warning 'Could not find module online.'
         $psGalleryVersion = [PSSemVer]'0.0.0'
@@ -207,7 +206,9 @@ function Publish-PSModule {
     Write-Warning "PSGallery: [$($psGalleryVersion.ToString())]"
     Write-Warning "Manifest:  [$($manifestVersion.ToString())]"
     Write-Warning "GitHub:    [$($ghReleaseVersion.ToString())]"
-    $newVersion = $psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1
+    $newVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
+
+    Write-Verbose ($newVersion | Out-String)
 
     # - GitHub mode - Take the version number from the release
     # - PSGallery mode - Take the version number from the PSGallery
