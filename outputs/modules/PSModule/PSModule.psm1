@@ -20,16 +20,16 @@ Write-Verbose "[$scriptName] - [data] - Done"
 #region - From /public
 Write-Verbose "[$scriptName] - [/public] - Processing folder"
 
-#region - From /public/Test-PSModuleTest.ps1
-Write-Verbose "[$scriptName] - [/public/Test-PSModuleTest.ps1] - Importing"
+#region - From /public/Test-PSModule.ps1
+Write-Verbose "[$scriptName] - [/public/Test-PSModule.ps1] - Importing"
 
-Function Test-PSModuleTest {
+Function Test-PSModule {
     <#
         .SYNOPSIS
         Performs tests on a module.
 
         .EXAMPLE
-        Test-PSModuleTest -Name 'World'
+        Test-PSModule -Name 'World'
 
         "Hello, World!"
     #>
@@ -42,10 +42,10 @@ Function Test-PSModuleTest {
     Write-Output "Hello, $Name!"
 }
 
-Write-Verbose "[$scriptName] - [/public/Test-PSModuleTest.ps1] - Done"
-#endregion - From /public/Test-PSModuleTest.ps1
+Write-Verbose "[$scriptName] - [/public/Test-PSModule.ps1] - Done"
+#endregion - From /public/Test-PSModule.ps1
 
 Write-Verbose "[$scriptName] - [/public] - Done"
 #endregion - From /public
 
-Export-ModuleMember -Function 'Test-PSModuleTest' -Cmdlet '' -Variable '' -Alias '*'
+Export-ModuleMember -Function 'Test-PSModule' -Cmdlet '' -Variable '' -Alias '*'

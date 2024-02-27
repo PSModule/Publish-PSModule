@@ -1,5 +1,5 @@
 @{
-    RootModule            = 'PSModule.Publish.psm1'
+    RootModule            = 'PSModule.psm1'
     ModuleVersion         = '0.0.1'
     CompatiblePSEditions  = 'Core', 'Desktop'
     GUID                  = '567bd93a-a0d5-4715-8cdf-6b5089d73065'
@@ -14,14 +14,11 @@
     TypesToProcess        = @()
     FormatsToProcess      = @()
     NestedModules         = @()
-    FunctionsToExport     = 'Test-PSModuleTest'
+    FunctionsToExport     = 'Test-PSModule'
     CmdletsToExport       = @()
     AliasesToExport       = ''
     ModuleList            = @()
-    FileList              = @(
-        'PSModule.Publish.psd1',
-        'PSModule.Publish.psm1'
-    )
+    FileList              = 'PSModule.psd1', 'PSModule.psm1'
     PrivateData           = @{
         PSData = @{
             Tags = 'PSEdition_Desktop', 'PSEdition_Core'
