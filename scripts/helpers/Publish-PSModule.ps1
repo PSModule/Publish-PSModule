@@ -144,19 +144,15 @@ function Publish-PSModule {
     Write-Output '-------------------------------------------------'
     #endregion Calculate release type
 
-    #region Get latest version - GitHub - Get all releases
-    Start-LogGroup 'Get latest version - GitHub - Get all releases'
+    #region Get latest version - GitHub
+    Start-LogGroup 'Get latest version - GitHub'
     $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
     if ($LASTEXITCODE -ne 0) {
         Write-Error 'Failed to list all releases for the repo.'
         exit $LASTEXITCODE
     }
     $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table
-    Stop-LogGroup
-    #endregion Get latest version - GitHub - Get all releases
 
-    #region Get latest version - GitHub
-    Start-LogGroup 'Get latest version - GitHub'
     $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
