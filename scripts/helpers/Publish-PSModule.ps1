@@ -144,8 +144,8 @@ function Publish-PSModule {
     Write-Output '-------------------------------------------------'
     #endregion Calculate release type
 
-    #region Get GitHub releases
-    Start-LogGroup 'Get Github releases'
+    #region Get latest version - GitHub - Get all releases
+    Start-LogGroup 'Get latest version - GitHub - Get all releases'
     $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
     if ($LASTEXITCODE -ne 0) {
         Write-Error 'Failed to list all releases for the repo.'
@@ -153,10 +153,10 @@ function Publish-PSModule {
     }
     $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table
     Stop-LogGroup
-    #endregion Get GitHub releases
+    #endregion Get latest version - GitHub - Get all releases
 
-    #region Get GitHub latest version
-    Start-LogGroup 'Get latest version - GitHub Release'
+    #region Get latest version - GitHub
+    Start-LogGroup 'Get latest version - GitHub'
     $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
@@ -173,10 +173,10 @@ function Publish-PSModule {
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
 
-    #endregion Get GitHub latest version
+    #endregion Get latest version - GitHub
 
-    #region Get latest version - target location (PSGallery)
-    Start-LogGroup 'Get latest version - target location (PSGallery)'
+    #region Get latest version - PSGallery
+    Start-LogGroup 'Get latest version - PSGallery'
     try {
         $psGalleryVersion = [PSSemVer](Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
     } catch {
@@ -189,10 +189,10 @@ function Publish-PSModule {
     Write-Verbose $psGalleryVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
-    #endregion Get latest version - target location (PSGallery)
+    #endregion Get latest version - PSGallery
 
-    #region Get module manifest version.
-    Start-LogGroup 'Get module manifest version'
+    #region Get latest version - Manifest
+    Start-LogGroup 'Get latest version - Manifest'
     Add-PSModulePath -Path (Split-Path -Path $ModulePath -Parent)
     $manifestFilePath = Join-Path $ModulePath "$Name.psd1"
     Write-Verbose "Module manifest file path: [$manifestFilePath]"
@@ -214,20 +214,27 @@ function Publish-PSModule {
     Write-Verbose $manifestVersion.ToString()
     Write-Verbose '-------------------------------------------------'
     Stop-LogGroup
-    #endregion Get module manifest version.
+    #endregion Get latest version - Manifest
+
+    #region Get latest version
+    Start-LogGroup 'Get latest version'
+    Write-Verbose "GitHub:    [$($ghReleaseVersion.ToString())]"
+    Write-Verbose "PSGallery: [$($psGalleryVersion.ToString())]"
+    Write-Verbose "Manifest:  [$($manifestVersion.ToString())]"
+    $latestVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
+    Write-Verbose '-------------------------------------------------'
+    Write-Verbose 'Latest version:'
+    Write-Verbose ($latestVersion | Format-Table | Out-String)
+    Write-Verbose $latestVersion.ToString()
+    Write-Verbose '-------------------------------------------------'
+    Stop-LogGroup
+    #endregion Get latest version
 
     #region Calculate new version
     Start-LogGroup 'Calculate new version'
 
-    # - Mixed mode - Take the highest version from GH, PSGallery and manifest
-    $newVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
-
-    Write-Verbose ($newVersion | Format-Table | Out-String)
-    Write-Verbose $newVersion.ToString()
-    # - GitHub mode - Take the version number from the release
-    # - PSGallery mode - Take the version number from the PSGallery
-
     # - Increment based on label on PR
+    $newVersion = New-SemVer -Version $latestVersion
     $newVersion.Prefix = $versionPrefix
     if ($majorRelease) {
         Write-Output 'Incrementing major version.'
@@ -243,8 +250,6 @@ function Publish-PSModule {
         return
     }
 
-    # - Manifest mode
-    #   - Take the version number from the manifest directly
     Write-Output "Partial new version: [$newVersion]"
 
     if ($createPrerelease) {
