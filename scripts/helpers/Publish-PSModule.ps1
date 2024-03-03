@@ -212,8 +212,8 @@ function Publish-PSModule {
     Start-LogGroup 'Get latest version'
     Write-Verbose "GitHub:    [$($ghReleaseVersion.ToString())]"
     Write-Verbose "PSGallery: [$($psGalleryVersion.ToString())]"
-    Write-Verbose "Manifest:  [$($manifestVersion.ToString())]"
-    $latestVersion = [PSSemVer]($psGalleryVersion, $manifestVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
+    Write-Verbose "Manifest:  [$($manifestVersion.ToString())] (ignored)"
+    $latestVersion = [PSSemVer]($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'Latest version:'
     Write-Verbose ($latestVersion | Format-Table | Out-String)
