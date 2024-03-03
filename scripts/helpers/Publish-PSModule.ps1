@@ -295,12 +295,13 @@ function Publish-PSModule {
             $newVersion.Prerelease += $latestPrereleaseNumber
         }
     }
-    Stop-LogGroup
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'New version:'
     Write-Verbose ($newVersion | Format-Table | Out-String)
     Write-Verbose $newVersion.ToString()
     Write-Verbose '-------------------------------------------------'
+    Stop-LogGroup
+    Write-Verbose "New version is [$($newVersion.ToString())]"
     #endregion Calculate new version
 
     #region Update module manifest
@@ -314,6 +315,7 @@ function Publish-PSModule {
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
     }
 
+    #region Format manifest file
     $manifestContent = Get-Content -Path $manifestFilePath
     $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
     $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
