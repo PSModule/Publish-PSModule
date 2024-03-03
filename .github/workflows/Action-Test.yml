@@ -21,5 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModule
+          ModulePath: tests/outputs/modules
+          DocsPath: tests/outputs/docs
           APIKey: ${{ secrets.APIKEY }}
           WhatIf: true

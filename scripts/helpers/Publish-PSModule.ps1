@@ -306,24 +306,12 @@ function Publish-PSModule {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
     }
-
-    #region Format manifest file
-    $manifestContent = Get-Content -Path $manifestFilePath
-    $manifestContent = $manifestContent | ForEach-Object { $_ -replace '#.*' }
-    $manifestContent = $manifestContent | ForEach-Object { $_.TrimEnd() }
-    $manifestContent = $manifestContent | Where-Object { $_ | IsNotNullOrEmpty }
-    $manifestContent | Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
-
-    $manifestContent = Get-Content -Path $manifestFilePath -Raw
-    $settings = (Join-Path -Path $PSScriptRoot 'PSScriptAnalyzer.Tests.psd1')
-    Invoke-Formatter -ScriptDefinition $manifestContent -Settings $settings |
-        Out-File -FilePath $manifestFilePath -Encoding utf8BOM -Force
+    Format-ModuleManifest -Path $manifestFilePath
     Stop-LogGroup
 
     Start-LogGroup 'Format manifest file - Result'
     Show-FileContent -Path $manifestFilePath
     Stop-LogGroup
-    #endregion Format manifest file
 
     #endregion Update module manifest
 
