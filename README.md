@@ -36,7 +36,7 @@ prerelease with the branch name (in normalized form) as the prerelease name. By 
   - `fix`
 
 The types of labels used for the types of prereleases can be configured using the `MajorLabels`, `MinorLabels` and `PatchLabels`
-parameters/settings in the configuration file. See the [Usage](#Usage) section for more information.
+parameters/settings in the configuration file. See the [Usage](#usage) section for more information.
 
 When a pull request is merged into the default branch, the action will create a release based on the labels and clean up any previous
 prereleases that was created.
