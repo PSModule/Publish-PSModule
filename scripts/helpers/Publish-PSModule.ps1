@@ -306,7 +306,7 @@ function Publish-PSModule {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
         Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
     }
-    Format-ModuleManifest -Path $manifestFilePath
+    Set-ModuleManifest -Path $manifestFilePath
     Stop-LogGroup
 
     Start-LogGroup 'Format manifest file - Result'
