@@ -300,13 +300,12 @@ function Publish-PSModule {
     Start-LogGroup 'Update module manifest'
     Write-Verbose 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
-    Update-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
+    Set-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
     Show-FileContent -Path $manifestFilePath
     if ($createPrerelease) {
         Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
-        Update-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
+        Set-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
     }
-    Set-ModuleManifest -Path $manifestFilePath
     Stop-LogGroup
 
     Start-LogGroup 'Format manifest file - Result'
