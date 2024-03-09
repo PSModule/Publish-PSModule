@@ -18,11 +18,6 @@ jobs:
           repository: PSModule/PSModuleTest
           path: tests
 
-      - name: Show files
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse | Select-Object -ExpandProperty FullName | Sort-Object
-
       - name: Initialize environment
         uses: PSModule/Initialize-PSModule@main
 
