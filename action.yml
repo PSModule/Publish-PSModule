@@ -1,8 +1,9 @@
-name: Publish-PSModule
+name: Publish-PSModule (by PSModule)
 description: Publish a PowerShell module to the PowerShell Gallery.
+author: PSModule
 branding:
-  icon: activity
-  color: blue
+  icon: upload-cloud
+  color: gray-dark
 
 inputs:
   Name:
