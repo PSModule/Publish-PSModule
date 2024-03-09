@@ -2,6 +2,8 @@
 
 Creates a GitHub release and publishes the PowerShell module to the PowerShell Gallery.
 
+This GitHub Action is a part of the [PSModule framework](https://github.com/PSModule). It is recommended to use the [Process-PSModule workflow](https://github.com/PSModule/Process-PSModule) to automate the whole process of managing the PowerShell module.
+
 ## Specifications and practices
 
 Publish-PSModule follows:
