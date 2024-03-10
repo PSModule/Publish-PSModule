@@ -10,8 +10,6 @@ changelog:
       labels:
         - Minor
         - Feature
-        - Improvement
-        - Enhancement
     - title: Other Changes
       labels:
         - '*'
