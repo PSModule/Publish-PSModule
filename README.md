@@ -31,10 +31,8 @@ prerelease with the branch name (in normalized form) as the prerelease name. By 
 - For a minor release, and increasing the second number in the version.
   - `minor`
   - `feature`
-  - `improvement`
 - For a patch release, and increases the third number in the version.
   - `patch`
-  - `bug`
   - `fix`
 
 The types of labels used for the types of prereleases can be configured using the `MajorLabels`, `MinorLabels` and `PatchLabels`
@@ -58,10 +56,10 @@ The action can be configured using the following settings:
 | `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `NoRelease` | false |
 | `IncrementalPrerelease` | Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch. | `true` | false |
 | `MajorLabels` | A comma separated list of labels that trigger a major release. | `major, breaking` | false |
-| `MinorLabels` | A comma separated list of labels that trigger a minor release. | `minor, feature, improvement` | false |
+| `MinorLabels` | A comma separated list of labels that trigger a minor release. | `minor, feature` | false |
 | `ModulePath` | Path to the folder where the module to publish is located. | `outputs/modules` | false |
 | `Name` | Name of the module to publish. Defaults to the repository name. | | false |
-| `PatchLabels` | A comma separated list of labels that trigger a patch release. | `patch, fix, bug` | false |
+| `PatchLabels` | A comma separated list of labels that trigger a patch release. | `patch, fix` | false |
 | `VersionPrefix` | The prefix to use for the version number. | `v` | false |
 | `WhatIf` | Control wether to simulate the action. If enabled, the action will not create any releases. Used for testing. | `false` | false |
 

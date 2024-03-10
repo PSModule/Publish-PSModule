@@ -51,11 +51,11 @@ inputs:
   MinorLabels:
     description: A comma separated list of labels that trigger a minor release.
     required: false
-    default: minor, feature, improvement
+    default: minor, feature
   PatchLabels:
     description: A comma separated list of labels that trigger a patch release.
     required: false
-    default: patch, fix, bug
+    default: patch, fix
   VersionPrefix:
     description: The prefix to use for the version number.
     required: false
