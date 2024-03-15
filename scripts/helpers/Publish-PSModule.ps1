@@ -153,10 +153,10 @@ function Publish-PSModule {
     $latestRelease | Format-List
     $ghReleaseVersionString = $latestRelease.tagName
     if ($ghReleaseVersionString | IsNotNullOrEmpty) {
-        $ghReleaseVersion = [PSSemVer]$ghReleaseVersionString
+        $ghReleaseVersion = New-PSSemVer -Version $ghReleaseVersionString
     } else {
         Write-Warning 'Could not find the latest release version. Using ''0.0.0'' as the version.'
-        $ghReleaseVersion = [PSSemVer]'0.0.0'
+        $ghReleaseVersion = New-PSSemVer -Version '0.0.0'
     }
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'GitHub version:'
@@ -170,10 +170,10 @@ function Publish-PSModule {
     #region Get latest version - PSGallery
     Start-LogGroup 'Get latest version - PSGallery'
     try {
-        $psGalleryVersion = [PSSemVer](Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
+        $psGalleryVersion = New-PSSemVer -Version (Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
     } catch {
         Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
-        $psGalleryVersion = [PSSemVer]'0.0.0'
+        $psGalleryVersion = New-PSSemVer -Version '0.0.0'
     }
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'PSGallery version:'
@@ -193,11 +193,11 @@ function Publish-PSModule {
         return
     }
     try {
-        $manifestVersion = [PSSemVer](Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
+        $manifestVersion = New-PSSemVer -Version (Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
     } catch {
         if ($manifestVersion | IsNullOrEmpty) {
             Write-Warning 'Could not find the module version in the manifest. Using ''0.0.0'' as the version.'
-            $manifestVersion = [PSSemVer]'0.0.0'
+            $manifestVersion = New-PSSemVer -Version '0.0.0'
         }
     }
     Write-Verbose '-------------------------------------------------'
@@ -213,7 +213,7 @@ function Publish-PSModule {
     Write-Verbose "GitHub:    [$($ghReleaseVersion.ToString())]"
     Write-Verbose "PSGallery: [$($psGalleryVersion.ToString())]"
     Write-Verbose "Manifest:  [$($manifestVersion.ToString())] (ignored)"
-    $latestVersion = [PSSemVer]($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
+    $latestVersion = New-PSSemVer -Version ($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
     Write-Verbose '-------------------------------------------------'
     Write-Verbose 'Latest version:'
     Write-Verbose ($latestVersion | Format-Table | Out-String)
