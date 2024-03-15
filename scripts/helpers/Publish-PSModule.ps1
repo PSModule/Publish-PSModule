@@ -226,7 +226,7 @@ function Publish-PSModule {
     Start-LogGroup 'Calculate new version'
 
     # - Increment based on label on PR
-    $newVersion = New-SemVer -Version $latestVersion
+    $newVersion = New-PSSemVer -Version $latestVersion
     $newVersion.Prefix = $versionPrefix
     if ($majorRelease) {
         Write-Output 'Incrementing major version.'
