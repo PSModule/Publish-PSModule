@@ -4,6 +4,10 @@ run-name: "Action-Test - [${{ github.event.pull_request.title }} #${{ github.eve
 
 on: [pull_request]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   ActionTestDefault:
     name: Action-Test - [Default]
@@ -11,12 +15,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Checkout tests -> PSModuleTest
-        uses: actions/checkout@v4
-        with:
-          repository: PSModule/PSModuleTest
-          path: tests
 
       - name: Initialize environment
         uses: PSModule/Initialize-PSModule@main
@@ -26,7 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          Name: PSModule
+          Name: PSModuleTest
           ModulePath: tests/outputs/modules
           DocsPath: tests/outputs/docs
           APIKey: ${{ secrets.APIKEY }}
