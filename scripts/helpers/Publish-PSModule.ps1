@@ -321,7 +321,7 @@ function Publish-PSModule {
             try {
                 Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey -Verbose
             } catch {
-                Write-Error 'Failed to publish the module to the PowerShell Gallery.'
+                Write-Error $_.Exception.Message
                 exit $LASTEXITCODE
             }
         }
