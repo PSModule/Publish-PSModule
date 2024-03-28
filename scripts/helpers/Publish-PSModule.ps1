@@ -312,7 +312,6 @@ function Publish-PSModule {
 
     #region Install Prerequsites
     Start-LogGroup 'Install module dependencies'
-    $manifestFilePath = Join-Path -Path $Path -ChildPath "$moduleName.psd1"
     Resolve-PSModuleDependency -ManifestFilePath $manifestFilePath
     Stop-LogGroup
     #endregion Install Prerequsites
