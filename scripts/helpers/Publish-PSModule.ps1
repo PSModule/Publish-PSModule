@@ -310,6 +310,12 @@ function Publish-PSModule {
     Stop-LogGroup
     #endregion Update module manifest
 
+    #region Install Prerequsites
+    Start-LogGroup 'Install module dependencies'
+    Resolve-PSModuleDependency -ManifestFilePath $manifestFilePath
+    Stop-LogGroup
+    #endregion Install Prerequsites
+
     #region Create releases
     if ($createPrerelease -or $createRelease -or $whatIf) {
         #region Publish-ToPSGallery
