@@ -16,7 +16,7 @@ inputs:
   DocsPath:
     description: Path to the module documentation.
     required: false
-    default: outputs/docs
+    default: outputs/site
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
