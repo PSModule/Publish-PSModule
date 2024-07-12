@@ -23,7 +23,7 @@ Write-Verbose "Module path:       [$modulePath]"
 if (-not (Test-Path -Path $modulePath)) {
     throw "Module path [$modulePath] does not exist."
 }
-$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:GITHUB_ACTION_INPUT_DocsPath $name
+$docsPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:GITHUB_ACTION_INPUT_DocsPath
 Write-Verbose "Docs path:         [$docsPath]"
 if (-not (Test-Path -Path $docsPath)) {
     throw "Documentation path [$docsPath] does not exist."
