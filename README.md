@@ -52,7 +52,6 @@ The action can be configured using the following settings:
 | `AutoPatching` | Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label. | `true` | false |
 | `ConfigurationFile` | The path to the configuration file. Settings in the configuration file take precedence over the action inputs. | `.github\auto-release.yml` | false |
 | `DatePrereleaseFormat` | The format to use for the prerelease number using [.NET DateTime format strings](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings). | `''` | false |
-| `DocsPath` | Path to the folder where the module documentation is located. | `outputs/docs` | false |
 | `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `NoRelease` | false |
 | `IncrementalPrerelease` | Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch. | `true` | false |
 | `MajorLabels` | A comma separated list of labels that trigger a major release. | `major, breaking` | false |
