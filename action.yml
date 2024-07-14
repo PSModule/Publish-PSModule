@@ -13,10 +13,6 @@ inputs:
     description: Path to the module to publish.
     required: false
     default: outputs/modules
-  DocsPath:
-    description: Path to the module documentation.
-    required: false
-    default: outputs/site
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
@@ -73,7 +69,6 @@ runs:
       env:
         GITHUB_ACTION_INPUT_Name: ${{ inputs.Name }}
         GITHUB_ACTION_INPUT_ModulePath: ${{ inputs.ModulePath }}
-        GITHUB_ACTION_INPUT_DocsPath: ${{ inputs.DocsPath }}
         GITHUB_ACTION_INPUT_APIKey: ${{ inputs.APIKey }}
         GITHUB_ACTION_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
         GITHUB_ACTION_INPUT_AutoPatching: ${{ inputs.AutoPatching }}

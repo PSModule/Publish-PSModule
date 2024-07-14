@@ -21,10 +21,6 @@ function Publish-PSModule {
         [Parameter(Mandatory)]
         [string] $ModulePath,
 
-        # The path to the documentation to process.
-        [Parameter(Mandatory)]
-        [string] $DocsPath,
-
         # The API key for the destination repository.
         [Parameter(Mandatory)]
         [string] $APIKey
@@ -380,13 +376,6 @@ function Publish-PSModule {
         Write-Output "::notice::Release created: [$newVersion]"
         Stop-LogGroup
         #endregion New-GitHubRelease
-
-        #region Publish-Docs
-        Start-LogGroup "Publish docs - [$DocsPath]"
-        Write-Verbose 'Publish docs to GitHub Pages'
-        Write-Verbose 'Update docs path: Update-ModuleMetadata'
-        Stop-LogGroup
-        #endregion Publish-Docs
     }
     #endregion Create releases
 
