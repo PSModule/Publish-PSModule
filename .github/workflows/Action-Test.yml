@@ -30,6 +30,5 @@ jobs:
         with:
           Name: PSModuleTest
           ModulePath: tests/outputs/modules
-          DocsPath: tests/outputs/docs
           APIKey: ${{ secrets.APIKEY }}
           WhatIf: true
