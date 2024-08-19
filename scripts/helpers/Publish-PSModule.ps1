@@ -16,6 +16,10 @@ function Publish-PSModule {
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
     )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseDeclaredVarsMoreThanAssignments', 'moduleName',
+        Justification = 'LogGroup - Scoping affects the variables line of sight.'
+    )]
     param(
         # Name of the module to process.
         [Parameter()]
