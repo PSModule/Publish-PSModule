@@ -17,7 +17,11 @@ function Publish-PSModule {
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
     )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
-        'PSUseDeclaredVarsMoreThanAssignments', 'moduleName',
+        'PSUseDeclaredVarsMoreThanAssignments', '',
+        Justification = 'LogGroup - Scoping affects the variables line of sight.'
+    )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseDeclaredVarsMoreThanAssignments', '',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
     )]
     param(
