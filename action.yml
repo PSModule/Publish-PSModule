@@ -64,6 +64,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Run Build-PSModule
+      uses: PSModule/GitHub-Script@v1
+
     - name: Run Publish-PSModule
       shell: pwsh
       env:
