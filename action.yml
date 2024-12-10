@@ -66,9 +66,6 @@ runs:
   steps:
     - name: Run Build-PSModule
       uses: PSModule/GitHub-Script@v1
-
-    - name: Run Publish-PSModule
-      shell: pwsh
       env:
         GITHUB_ACTION_INPUT_Name: ${{ inputs.Name }}
         GITHUB_ACTION_INPUT_ModulePath: ${{ inputs.ModulePath }}
@@ -84,6 +81,7 @@ runs:
         GITHUB_ACTION_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         GITHUB_ACTION_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         GITHUB_ACTION_INPUT_WhatIf: ${{ inputs.WhatIf }}
-      run: |
-        # Publish-PSModule
-        . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" -Verbose
+      with:
+        Script: |
+          # Publish-PSModule
+          . "$env:GITHUB_ACTION_PATH\scripts\main.ps1" -Verbose
