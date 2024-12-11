@@ -309,7 +309,7 @@ function Publish-PSModule {
                 Write-Verbose "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey -Verbose"
             } else {
                 try {
-                    Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey -Verbose
+                    Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey
                 } catch {
                     Write-Error $_.Exception.Message
                     exit $LASTEXITCODE

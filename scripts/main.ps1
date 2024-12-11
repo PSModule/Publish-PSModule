@@ -31,4 +31,4 @@ $params = @{
     ModulePath = $modulePath
     APIKey     = $env:GITHUB_ACTION_INPUT_APIKey
 }
-Publish-PSModule @params -Verbose
+Publish-PSModule @params
