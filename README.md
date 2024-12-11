@@ -45,22 +45,26 @@ prereleases that was created.
 
 The action can be configured using the following settings:
 
-| Name | Description | Default | Required |
+| Name | Description | Required | Default |
 | --- | --- | --- | --- |
-| `APIKey` | PowerShell Gallery API Key. | | true |
-| `AutoCleanup`| Control wether to automatically cleanup prereleases. If disabled, the action will not remove any prereleases. | `true` | false |
-| `AutoPatching` | Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label. | `true` | false |
-| `ConfigurationFile` | The path to the configuration file. Settings in the configuration file take precedence over the action inputs. | `.github\auto-release.yml` | false |
-| `DatePrereleaseFormat` | The format to use for the prerelease number using [.NET DateTime format strings](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings). | `''` | false |
-| `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `NoRelease` | false |
-| `IncrementalPrerelease` | Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch. | `true` | false |
-| `MajorLabels` | A comma separated list of labels that trigger a major release. | `major, breaking` | false |
-| `MinorLabels` | A comma separated list of labels that trigger a minor release. | `minor, feature` | false |
-| `ModulePath` | Path to the folder where the module to publish is located. | `outputs/modules` | false |
-| `Name` | Name of the module to publish. Defaults to the repository name. | | false |
-| `PatchLabels` | A comma separated list of labels that trigger a patch release. | `patch, fix` | false |
-| `VersionPrefix` | The prefix to use for the version number. | `v` | false |
-| `WhatIf` | Control wether to simulate the action. If enabled, the action will not create any releases. Used for testing. | `false` | false |
+| `APIKey` | PowerShell Gallery API Key. | `true` | |
+| `AutoCleanup`| Control wether to automatically cleanup prereleases. If disabled, the action will not remove any prereleases. | `false` | `true` |
+| `AutoPatching` | Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label. | `false` | `true` |
+| `ConfigurationFile` | The path to the configuration file. Settings in the configuration file take precedence over the action inputs. | `false` | `.github\auto-release.yml` |
+| `DatePrereleaseFormat` | The format to use for the prerelease number using [.NET DateTime format strings](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings). | `false` | `''` |
+| `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `false` | `NoRelease` |
+| `IncrementalPrerelease` | Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch. | `false` | `true` |
+| `MajorLabels` | A comma separated list of labels that trigger a major release. | `false` | `major, breaking` |
+| `MinorLabels` | A comma separated list of labels that trigger a minor release. | `false` | `minor, feature` |
+| `ModulePath` | Path to the folder where the module to publish is located. | `false` | `outputs/modules` |
+| `Name` | Name of the module to publish. Defaults to the repository name. | `false` | |
+| `PatchLabels` | A comma separated list of labels that trigger a patch release. | `false` | `patch, fix` |
+| `VersionPrefix` | The prefix to use for the version number. | `false` | `v` |
+| `WhatIf` | Control wether to simulate the action. If enabled, the action will not create any releases. Used for testing. | `false` | `false` |
+| `Debug` | Enable debug output. | `'false'` | `false` |
+| `Verbose` | Enable verbose output. | `'false'` | `false` |
+| `Version` | Specifies the version of the GitHub module to be installed. The value must be an exact version. | | `false` |
+| `Prerelease` | Allow prerelease versions if available. | `'false'` | `false` |
 
 ### Configuration file
 
