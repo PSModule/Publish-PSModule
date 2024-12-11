@@ -103,4 +103,4 @@ runs:
         Version: ${{ inputs.Version }}
         Script: |
           # Publish-PSModule
-          . "$env:GITHUB_ACTION_PATH\scripts\main.ps1"
+          . "${{ github.action_path }}\scripts\main.ps1"
