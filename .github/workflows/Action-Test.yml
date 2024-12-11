@@ -32,6 +32,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          Verbose: true
+          Debug: true
           Name: PSModuleTest
           ModulePath: tests/outputs/modules
           APIKey: ${{ secrets.APIKEY }}
