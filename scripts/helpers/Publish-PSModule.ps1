@@ -88,7 +88,7 @@ function Publish-PSModule {
             exit
         }
         $actionType = $githubEvent.action
-        $isMerged = ($pull_request.merged).ToString() -eq 'True'
+        $isMerged = $pull_request.merged -eq 'True'
         $prIsClosed = $pull_request.state -eq 'closed'
         $prBaseRef = $pull_request.base.ref
         $prHeadRef = $pull_request.head.ref
