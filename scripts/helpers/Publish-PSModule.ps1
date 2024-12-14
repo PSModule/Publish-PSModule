@@ -318,8 +318,8 @@ function Publish-PSModule {
             if ($whatIf) {
                 Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$newVersion]($releaseURL) has been created.'"
             } else {
-                Write-Output "::notice::Module [$Name - $manifestNewVersion] published to the PowerShell Gallery."
-                gh pr comment $pull_request.number -b "Module [$Name - $manifestNewVersion] published to the PowerShell Gallery."
+                Write-Output "::notice::Module [$Name - $newVersion] published to the PowerShell Gallery."
+                gh pr comment $pull_request.number -b "Module [$Name - $newVersion] published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
                     exit $LASTEXITCODE
