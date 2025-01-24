@@ -275,7 +275,7 @@ function Publish-PSModule {
 
                 $latestPrereleaseNumber = [Math]::Max($latestPSGalleryPrerelease, $latestGHPrereleases)
                 $latestPrereleaseNumber++
-                $latestPrereleaseNumber = $latestPrereleaseNumber.PadLeft(3,'0')
+                $latestPrereleaseNumber = ([string]$latestPrereleaseNumber).PadLeft(3, '0')
                 $newVersion.Prerelease += $latestPrereleaseNumber
             }
         }
