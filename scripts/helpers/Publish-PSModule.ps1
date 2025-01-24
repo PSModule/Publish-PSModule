@@ -1,4 +1,4 @@
-﻿#Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub
+﻿#Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub, PSSemVer
 
 function Publish-PSModule {
     <#
@@ -170,9 +170,11 @@ function Publish-PSModule {
     LogGroup 'Get latest version - PSGallery' {
         try {
             Retry -Count 5 -Delay 10 {
+                Write-Output "Finding module [$Name] in the PowerShell Gallery."
                 $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
+                Write-Output ($latest | Format-Table | Out-String)
             } -Catch {
-                Write-Output $_
+                throw $_
             }
             $psGalleryVersion = New-PSSemVer -Version $latest.Version
         } catch {
@@ -260,7 +262,17 @@ function Publish-PSModule {
                 $newVersionString = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
 
                 # PowerShell Gallery
-                $psGalleryPrereleases = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false -Version * -Prerelease
+                $params = @{
+                    Name        = $Name
+                    Version     = '*'
+                    Prerelease  = $true
+                    Repository  = 'PSGallery'
+                    Verbose     = $false
+                    ErrorAction = 'SilentlyContinue'
+                }
+                Write-Output 'Finding the latest prerelease version in the PowerShell Gallery.'
+                Write-Output ($params | Format-Table | Out-String)
+                $psGalleryPrereleases = Find-PSResource @params
                 $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Version -like "$newVersionString" }
                 $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Prerelease -like "$prereleaseName*" }
                 $latestPSGalleryPrerelease = $psGalleryPrereleases.Prerelease | ForEach-Object {
@@ -332,7 +344,7 @@ function Publish-PSModule {
             if ($whatIf) {
                 Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
             } else {
-                Write-GithubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
+                Write-GitHubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
                 gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
@@ -373,7 +385,7 @@ function Publish-PSModule {
                     exit $LASTEXITCODE
                 }
             }
-            Write-GithubNotice "Release created: [$newVersion]"
+            Write-GitHubNotice "Release created: [$newVersion]"
         }
     }
 
