@@ -1,4 +1,4 @@
-﻿#REQUIRES -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet
+﻿#Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub
 
 function Publish-PSModule {
     <#
@@ -11,6 +11,7 @@ function Publish-PSModule {
         .EXAMPLE
         Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
     #>
+    [OutputType([void])]
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
@@ -159,31 +160,36 @@ function Publish-PSModule {
             Write-Warning 'Could not find the latest release version. Using ''0.0.0'' as the version.'
             $ghReleaseVersion = New-PSSemVer -Version '0.0.0'
         }
-        Write-Verbose '-------------------------------------------------'
-        Write-Verbose 'GitHub version:'
-        Write-Verbose ($ghReleaseVersion | Format-Table | Out-String)
-        Write-Verbose $ghReleaseVersion.ToString()
-        Write-Verbose '-------------------------------------------------'
+        Write-Output '-------------------------------------------------'
+        Write-Output 'GitHub version:'
+        Write-Output ($ghReleaseVersion | Format-Table | Out-String)
+        Write-Output $ghReleaseVersion.ToString()
+        Write-Output '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version - PSGallery' {
         try {
-            $psGalleryVersion = New-PSSemVer -Version (Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false).Version
+            Retry -Count 5 -Delay 10 {
+                $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
+            } -Catch {
+                Write-Output $_
+            }
+            $psGalleryVersion = New-PSSemVer -Version $latest.Version
         } catch {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
         }
-        Write-Verbose '-------------------------------------------------'
-        Write-Verbose 'PSGallery version:'
-        Write-Verbose ($psGalleryVersion | Format-Table | Out-String)
-        Write-Verbose $psGalleryVersion.ToString()
-        Write-Verbose '-------------------------------------------------'
+        Write-Output '-------------------------------------------------'
+        Write-Output 'PSGallery version:'
+        Write-Output ($psGalleryVersion | Format-Table | Out-String)
+        Write-Output $psGalleryVersion.ToString()
+        Write-Output '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version - Manifest' {
         Add-PSModulePath -Path (Split-Path -Path $ModulePath -Parent)
         $manifestFilePath = Join-Path $ModulePath "$Name.psd1"
-        Write-Verbose "Module manifest file path: [$manifestFilePath]"
+        Write-Output "Module manifest file path: [$manifestFilePath]"
         if (-not (Test-Path -Path $manifestFilePath)) {
             Write-Error "Module manifest file not found at [$manifestFilePath]"
             return
@@ -196,23 +202,23 @@ function Publish-PSModule {
                 $manifestVersion = New-PSSemVer -Version '0.0.0'
             }
         }
-        Write-Verbose '-------------------------------------------------'
-        Write-Verbose 'Manifest version:'
-        Write-Verbose ($manifestVersion | Format-Table | Out-String)
-        Write-Verbose $manifestVersion.ToString()
-        Write-Verbose '-------------------------------------------------'
+        Write-Output '-------------------------------------------------'
+        Write-Output 'Manifest version:'
+        Write-Output ($manifestVersion | Format-Table | Out-String)
+        Write-Output $manifestVersion.ToString()
+        Write-Output '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version' {
-        Write-Verbose "GitHub:    [$($ghReleaseVersion.ToString())]"
-        Write-Verbose "PSGallery: [$($psGalleryVersion.ToString())]"
-        Write-Verbose "Manifest:  [$($manifestVersion.ToString())] (ignored)"
+        Write-Output "GitHub:    [$($ghReleaseVersion.ToString())]"
+        Write-Output "PSGallery: [$($psGalleryVersion.ToString())]"
+        Write-Output "Manifest:  [$($manifestVersion.ToString())] (ignored)"
         $latestVersion = New-PSSemVer -Version ($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
-        Write-Verbose '-------------------------------------------------'
-        Write-Verbose 'Latest version:'
-        Write-Verbose ($latestVersion | Format-Table | Out-String)
-        Write-Verbose $latestVersion.ToString()
-        Write-Verbose '-------------------------------------------------'
+        Write-Output '-------------------------------------------------'
+        Write-Output 'Latest version:'
+        Write-Output ($latestVersion | Format-Table | Out-String)
+        Write-Output $latestVersion.ToString()
+        Write-Output '-------------------------------------------------'
     }
 
     LogGroup 'Calculate new version' {
@@ -237,7 +243,7 @@ function Publish-PSModule {
 
         if ($createPrerelease) {
             Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
-            Write-Verbose ($releases | Where-Object { $_.tagName -like "*$prereleaseName*" } |
+            Write-Output ($releases | Where-Object { $_.tagName -like "*$prereleaseName*" } |
                     Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table -AutoSize | Out-String)
 
             $newVersion.Prerelease = $prereleaseName
@@ -279,20 +285,20 @@ function Publish-PSModule {
                 $newVersion.Prerelease += $latestPrereleaseNumber
             }
         }
-        Write-Verbose '-------------------------------------------------'
-        Write-Verbose 'New version:'
-        Write-Verbose ($newVersion | Format-Table | Out-String)
-        Write-Verbose $newVersion.ToString()
-        Write-Verbose '-------------------------------------------------'
+        Write-Output '-------------------------------------------------'
+        Write-Output 'New version:'
+        Write-Output ($newVersion | Format-Table | Out-String)
+        Write-Output $newVersion.ToString()
+        Write-Output '-------------------------------------------------'
     }
-    Write-Verbose "New version is [$($newVersion.ToString())]"
+    Write-Output "New version is [$($newVersion.ToString())]"
 
     LogGroup 'Update module manifest' {
-        Write-Verbose 'Bump module version -> module metadata: Update-ModuleMetadata'
+        Write-Output 'Bump module version -> module metadata: Update-ModuleMetadata'
         $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
         Set-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
         if ($createPrerelease) {
-            Write-Verbose "Prerelease is: [$($newVersion.Prerelease)]"
+            Write-Output "Prerelease is: [$($newVersion.Prerelease)]"
             Set-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
         }
 
@@ -305,9 +311,16 @@ function Publish-PSModule {
 
     if ($createPrerelease -or $createRelease -or $whatIf) {
         LogGroup 'Publish-ToPSGallery' {
-            Write-Verbose "Publish module to PowerShell Gallery using [$APIKey]"
+            if ($createPrerelease) {
+                $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
+                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
+            } else {
+                $publishPSVersion = $newVersion.ToString()
+                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$($newVersion.ToString())"
+            }
+            Write-Output "Publish module to PowerShell Gallery using [$APIKey]"
             if ($whatIf) {
-                Write-Verbose "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey -Verbose"
+                Write-Output "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey"
             } else {
                 try {
                     Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey
@@ -317,10 +330,10 @@ function Publish-PSModule {
                 }
             }
             if ($whatIf) {
-                Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$newVersion]($releaseURL) has been created.'"
+                Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
             } else {
-                Write-Output "::notice::Module [$Name - $newVersion] published to the PowerShell Gallery."
-                gh pr comment $pull_request.number -b "Module [$Name - $newVersion] published to the PowerShell Gallery."
+                Write-GithubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
+                gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
                     exit $LASTEXITCODE
@@ -329,7 +342,7 @@ function Publish-PSModule {
         }
 
         LogGroup 'New-GitHubRelease' {
-            Write-Verbose 'Create new GitHub release'
+            Write-Output 'Create new GitHub release'
             if ($createPrerelease) {
                 if ($whatIf) {
                     Write-Output "WhatIf: gh release create $newVersion --title $newVersion --target $prHeadRef --generate-notes --prerelease"
@@ -360,7 +373,7 @@ function Publish-PSModule {
                     exit $LASTEXITCODE
                 }
             }
-            Write-Output "::notice::Release created: [$newVersion]"
+            Write-GithubNotice "Release created: [$newVersion]"
         }
     }
 
