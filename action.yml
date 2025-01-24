@@ -79,7 +79,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Run Build-PSModule
+    - name: Run Publish-PSModule
       uses: PSModule/GitHub-Script@v1
       env:
         GITHUB_ACTION_INPUT_Name: ${{ inputs.Name }}
@@ -103,4 +103,4 @@ runs:
         Version: ${{ inputs.Version }}
         Script: |
           # Publish-PSModule
-          . "${{ github.action_path }}\scripts\main.ps1"
+          ${{ github.action_path }}\scripts\main.ps1
