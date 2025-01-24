@@ -311,6 +311,13 @@ function Publish-PSModule {
 
     if ($createPrerelease -or $createRelease -or $whatIf) {
         LogGroup 'Publish-ToPSGallery' {
+            if ($createPrerelease) {
+                $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
+                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
+            } else {
+                $publishPSVersion = $newVersion.ToString()
+                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$($newVersion.ToString())"
+            }
             Write-Output "Publish module to PowerShell Gallery using [$APIKey]"
             if ($whatIf) {
                 Write-Output "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey"
@@ -323,10 +330,10 @@ function Publish-PSModule {
                 }
             }
             if ($whatIf) {
-                Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$newVersion]($releaseURL) has been created.'"
+                Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
             } else {
-                Write-Output "::notice::Module [$Name - $newVersion] published to the PowerShell Gallery."
-                gh pr comment $pull_request.number -b "Module [$Name - $newVersion] published to the PowerShell Gallery."
+                Write-GithubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
+                gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
                     exit $LASTEXITCODE
@@ -366,7 +373,7 @@ function Publish-PSModule {
                     exit $LASTEXITCODE
                 }
             }
-            Write-Output "::notice::Release created: [$newVersion]"
+            Write-GithubNotice "Release created: [$newVersion]"
         }
     }
 
