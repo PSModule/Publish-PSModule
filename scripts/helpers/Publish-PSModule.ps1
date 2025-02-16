@@ -61,10 +61,18 @@
         $configuration.WhatIf -eq 'true' :
         $env:GITHUB_ACTION_INPUT_WhatIf -eq 'true'
 
-        $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ? $configuration.IgnoreLabels : $env:GITHUB_ACTION_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ? $configuration.MajorLabels : $env:GITHUB_ACTION_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $minorLabels = (($configuration.MinorLabels | IsNotNullOrEmpty) ? $configuration.MinorLabels : $env:GITHUB_ACTION_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $patchLabels = (($configuration.PatchLabels | IsNotNullOrEmpty) ? $configuration.PatchLabels : $env:GITHUB_ACTION_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
+        $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ?
+            $configuration.IgnoreLabels :
+            $env:GITHUB_ACTION_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
+        $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ?
+            $configuration.MajorLabels :
+            $env:GITHUB_ACTION_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
+        $minorLabels = (($configuration.MinorLabels | IsNotNullOrEmpty) ?
+            $configuration.MinorLabels :
+            $env:GITHUB_ACTION_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
+        $patchLabels = (($configuration.PatchLabels | IsNotNullOrEmpty) ?
+            $configuration.PatchLabels :
+            $env:GITHUB_ACTION_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
 
         Write-Output '-------------------------------------------------'
         Write-Output "Auto cleanup enabled:           [$autoCleanup]"
@@ -142,7 +150,9 @@
 
         $majorRelease = ($labels | Where-Object { $majorLabels -contains $_ }).Count -gt 0
         $minorRelease = ($labels | Where-Object { $minorLabels -contains $_ }).Count -gt 0 -and -not $majorRelease
-        $patchRelease = (($labels | Where-Object { $patchLabels -contains $_ }).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
+        $patchRelease = (
+            ($labels | Where-Object { $patchLabels -contains $_ }
+        ).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
         Write-Output '-------------------------------------------------'
         Write-Output "Create a release:               [$createRelease]"
@@ -353,7 +363,10 @@
                 }
             }
             if ($whatIf) {
-                Write-Output "gh pr comment $($pull_request.number) -b 'Published to the PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
+                Write-Output (
+                    "gh pr comment $($pull_request.number) -b 'Published to the" +
+                    " PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
+                )
             } else {
                 Write-GitHubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
                 gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
