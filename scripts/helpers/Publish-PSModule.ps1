@@ -1,18 +1,17 @@
-﻿#Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub, PSSemVer
-
-function Publish-PSModule {
+﻿function Publish-PSModule {
     <#
-        .SYNOPSIS
-        Publishes a module to the PowerShell Gallery and GitHub Pages.
+    .SYNOPSIS
+    Publishes a module to the PowerShell Gallery and GitHub Pages.
 
-        .DESCRIPTION
-        Publishes a module to the PowerShell Gallery and GitHub Pages.
+    .DESCRIPTION
+    Publishes a module to the PowerShell Gallery and GitHub Pages.
 
-        .EXAMPLE
-        Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
+    .EXAMPLE
+    Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
     #>
     [OutputType([void])]
     [CmdletBinding()]
+    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub, PSSemVer
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
@@ -43,12 +42,24 @@ function Publish-PSModule {
             $configuration = ConvertFrom-Yaml -Yaml (Get-Content $env:GITHUB_ACTION_INPUT_ConfigurationFile -Raw)
         }
 
-        $autoCleanup = ($configuration.AutoCleanup | IsNotNullOrEmpty) ? $configuration.AutoCleanup -eq 'true' : $env:GITHUB_ACTION_INPUT_AutoCleanup -eq 'true'
-        $autoPatching = ($configuration.AutoPatching | IsNotNullOrEmpty) ? $configuration.AutoPatching -eq 'true' : $env:GITHUB_ACTION_INPUT_AutoPatching -eq 'true'
-        $datePrereleaseFormat = ($configuration.DatePrereleaseFormat | IsNotNullOrEmpty) ? $configuration.DatePrereleaseFormat : $env:GITHUB_ACTION_INPUT_DatePrereleaseFormat
-        $incrementalPrerelease = ($configuration.IncrementalPrerelease | IsNotNullOrEmpty) ? $configuration.IncrementalPrerelease -eq 'true' : $env:GITHUB_ACTION_INPUT_IncrementalPrerelease -eq 'true'
-        $versionPrefix = ($configuration.VersionPrefix | IsNotNullOrEmpty) ? $configuration.VersionPrefix : $env:GITHUB_ACTION_INPUT_VersionPrefix
-        $whatIf = ($configuration.WhatIf | IsNotNullOrEmpty) ? $configuration.WhatIf -eq 'true' : $env:GITHUB_ACTION_INPUT_WhatIf -eq 'true'
+        $autoCleanup = ($configuration.AutoCleanup | IsNotNullOrEmpty) ?
+        $configuration.AutoCleanup -eq 'true' :
+        $env:GITHUB_ACTION_INPUT_AutoCleanup -eq 'true'
+        $autoPatching = ($configuration.AutoPatching | IsNotNullOrEmpty) ?
+        $configuration.AutoPatching -eq 'true' :
+        $env:GITHUB_ACTION_INPUT_AutoPatching -eq 'true'
+        $datePrereleaseFormat = ($configuration.DatePrereleaseFormat | IsNotNullOrEmpty) ?
+        $configuration.DatePrereleaseFormat :
+        $env:GITHUB_ACTION_INPUT_DatePrereleaseFormat
+        $incrementalPrerelease = ($configuration.IncrementalPrerelease | IsNotNullOrEmpty) ?
+        $configuration.IncrementalPrerelease -eq 'true' :
+        $env:GITHUB_ACTION_INPUT_IncrementalPrerelease -eq 'true'
+        $versionPrefix = ($configuration.VersionPrefix | IsNotNullOrEmpty) ?
+        $configuration.VersionPrefix :
+        $env:GITHUB_ACTION_INPUT_VersionPrefix
+        $whatIf = ($configuration.WhatIf | IsNotNullOrEmpty) ?
+        $configuration.WhatIf -eq 'true' :
+        $env:GITHUB_ACTION_INPUT_WhatIf -eq 'true'
 
         $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ? $configuration.IgnoreLabels : $env:GITHUB_ACTION_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
         $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ? $configuration.MajorLabels : $env:GITHUB_ACTION_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
