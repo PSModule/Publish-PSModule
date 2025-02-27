@@ -12,7 +12,7 @@ inputs:
   ModulePath:
     description: Path to the module to publish.
     required: false
-    default: outputs/modules
+    default: outputs/module
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
@@ -27,7 +27,7 @@ inputs:
   ConfigurationFile:
     description: The path to the configuration file. Settings in the configuration file take precedence over the action inputs.
     required: false
-    default: .github\auto-release.yml
+    default: .github/auto-release.yml
   DatePrereleaseFormat:
     description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
     required: false
@@ -109,4 +109,4 @@ runs:
         WorkingDirectory: ${{ inputs.WorkingDirectory }}
         Script: |
           # Publish-PSModule
-          ${{ github.action_path }}\scripts\main.ps1
+          ${{ github.action_path }}/scripts/main.ps1
