@@ -65,6 +65,7 @@ The action can be configured using the following settings:
 | `Verbose` | Enable verbose output. | `'false'` | `false` |
 | `Version` | Specifies the version of the GitHub module to be installed. The value must be an exact version. | | `false` |
 | `Prerelease` | Allow prerelease versions if available. | `'false'` | `false` |
+| `WorkingDirectory` | The working directory where the script runs. | `'false'`    | `${{ github.workspace }}` |
 
 ### Configuration file
 
