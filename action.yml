@@ -75,6 +75,10 @@ inputs:
     description: Allow prerelease versions if available.
     required: false
     default: 'false'
+  WorkingDirectory:
+    description: The working directory where the script will run from.
+    required: false
+    default: ${{ github.workspace }}
 
 runs:
   using: composite
@@ -82,25 +86,27 @@ runs:
     - name: Run Publish-PSModule
       uses: PSModule/GitHub-Script@v1
       env:
-        GITHUB_ACTION_INPUT_Name: ${{ inputs.Name }}
-        GITHUB_ACTION_INPUT_ModulePath: ${{ inputs.ModulePath }}
-        GITHUB_ACTION_INPUT_APIKey: ${{ inputs.APIKey }}
-        GITHUB_ACTION_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
-        GITHUB_ACTION_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
-        GITHUB_ACTION_INPUT_ConfigurationFile: ${{ inputs.ConfigurationFile }}
-        GITHUB_ACTION_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
-        GITHUB_ACTION_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
-        GITHUB_ACTION_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
-        GITHUB_ACTION_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
-        GITHUB_ACTION_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
-        GITHUB_ACTION_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
-        GITHUB_ACTION_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
-        GITHUB_ACTION_INPUT_WhatIf: ${{ inputs.WhatIf }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath: ${{ inputs.ModulePath }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey: ${{ inputs.APIKey }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile: ${{ inputs.ConfigurationFile }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
       with:
         Debug: ${{ inputs.Debug }}
         Prerelease: ${{ inputs.Prerelease }}
         Verbose: ${{ inputs.Verbose }}
         Version: ${{ inputs.Version }}
+        WorkingDirectory: ${{ inputs.WorkingDirectory }}
         Script: |
           # Publish-PSModule
           ${{ github.action_path }}\scripts\main.ps1

@@ -10,16 +10,24 @@ LogGroup "Loading helper scripts from [$path]" {
 }
 
 LogGroup 'Loading inputs' {
-    Write-Verbose "Name:              [$env:GITHUB_ACTION_INPUT_Name]"
+    Write-Verbose "Name:              [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name]"
     Write-Verbose "GITHUB_REPOSITORY: [$env:GITHUB_REPOSITORY]"
-    Write-Verbose "GITHUB_WORKSPACE:  [$env:GITHUB_WORKSPACE]"
+    Write-Verbose "GITHUB_WORKSPACE:  [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory]"
 
-    $name = ($env:GITHUB_ACTION_INPUT_Name | IsNullOrEmpty) ? $env:GITHUB_REPOSITORY_NAME : $env:GITHUB_ACTION_INPUT_Name
+    $name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
+        $env:GITHUB_REPOSITORY_NAME
+    } else {
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
+    }
     Write-Verbose "Module name:       [$name]"
-    Write-Verbose "Module path:       [$env:GITHUB_ACTION_INPUT_ModulePath]"
-    Write-Verbose "Doc path:          [$env:GITHUB_ACTION_INPUT_DocsPath]"
+    Write-Verbose "Module path:       [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath]"
+    Write-Verbose "Doc path:          [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_DocsPath]"
 
-    $modulePath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $env:GITHUB_ACTION_INPUT_ModulePath $name
+    $params = @{
+        Path      = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory
+        ChildPath = "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name"
+    }
+    $modulePath = Join-Path @params
     Write-Verbose "Module path:       [$modulePath]"
     if (-not (Test-Path -Path $modulePath)) {
         throw "Module path [$modulePath] does not exist."
@@ -29,6 +37,6 @@ LogGroup 'Loading inputs' {
 $params = @{
     Name       = $name
     ModulePath = $modulePath
-    APIKey     = $env:GITHUB_ACTION_INPUT_APIKey
+    APIKey     = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
 }
 Publish-PSModule @params

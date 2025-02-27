@@ -35,6 +35,7 @@ jobs:
           Verbose: true
           Debug: true
           Name: PSModuleTest
-          ModulePath: tests/outputs/modules
+          ModulePath: modules
+          WorkingDirectory: tests/outputs
           APIKey: ${{ secrets.APIKEY }}
           WhatIf: true

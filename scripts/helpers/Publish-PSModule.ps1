@@ -35,44 +35,44 @@
     )
 
     LogGroup 'Set configuration' {
-        if (-not (Test-Path -Path $env:GITHUB_ACTION_INPUT_ConfigurationFile -PathType Leaf)) {
-            Write-Output "Configuration file not found at [$env:GITHUB_ACTION_INPUT_ConfigurationFile]"
+        if (-not (Test-Path -Path $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile -PathType Leaf)) {
+            Write-Output "Configuration file not found at [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile]"
         } else {
-            Write-Output "Reading from configuration file [$env:GITHUB_ACTION_INPUT_ConfigurationFile]"
-            $configuration = ConvertFrom-Yaml -Yaml (Get-Content $env:GITHUB_ACTION_INPUT_ConfigurationFile -Raw)
+            Write-Output "Reading from configuration file [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile]"
+            $configuration = ConvertFrom-Yaml -Yaml (Get-Content $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile -Raw)
         }
 
         $autoCleanup = ($configuration.AutoCleanup | IsNotNullOrEmpty) ?
         $configuration.AutoCleanup -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_AutoCleanup -eq 'true'
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
         $autoPatching = ($configuration.AutoPatching | IsNotNullOrEmpty) ?
         $configuration.AutoPatching -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_AutoPatching -eq 'true'
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
         $datePrereleaseFormat = ($configuration.DatePrereleaseFormat | IsNotNullOrEmpty) ?
         $configuration.DatePrereleaseFormat :
-        $env:GITHUB_ACTION_INPUT_DatePrereleaseFormat
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
         $incrementalPrerelease = ($configuration.IncrementalPrerelease | IsNotNullOrEmpty) ?
         $configuration.IncrementalPrerelease -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_IncrementalPrerelease -eq 'true'
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
         $versionPrefix = ($configuration.VersionPrefix | IsNotNullOrEmpty) ?
         $configuration.VersionPrefix :
-        $env:GITHUB_ACTION_INPUT_VersionPrefix
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
         $whatIf = ($configuration.WhatIf | IsNotNullOrEmpty) ?
         $configuration.WhatIf -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_WhatIf -eq 'true'
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
 
         $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ?
             $configuration.IgnoreLabels :
-            $env:GITHUB_ACTION_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
+            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
         $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ?
             $configuration.MajorLabels :
-            $env:GITHUB_ACTION_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
+            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
         $minorLabels = (($configuration.MinorLabels | IsNotNullOrEmpty) ?
             $configuration.MinorLabels :
-            $env:GITHUB_ACTION_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
+            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
         $patchLabels = (($configuration.PatchLabels | IsNotNullOrEmpty) ?
             $configuration.PatchLabels :
-            $env:GITHUB_ACTION_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
+            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
 
         Write-Output '-------------------------------------------------'
         Write-Output "Auto cleanup enabled:           [$autoCleanup]"
