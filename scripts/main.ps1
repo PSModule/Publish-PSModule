@@ -23,15 +23,9 @@ LogGroup 'Loading inputs' {
     Write-Verbose "Module path:       [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath]"
     Write-Verbose "Doc path:          [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_DocsPath]"
 
-    $params = @{
-        Path      = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory
-        ChildPath = "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name"
-    }
-    $modulePath = Join-Path @params
-    Write-Verbose "Module path:       [$modulePath]"
-    if (-not (Test-Path -Path $modulePath)) {
-        throw "Module path [$modulePath] does not exist."
-    }
+    $modulePath = Resolve-Path -Path "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory/$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name" |
+        Select-Object -ExpandProperty Path
+    Write-Verbose "Resolved path:     [$modulePath]"
 }
 
 $params = @{
