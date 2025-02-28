@@ -100,7 +100,7 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ github.workspace }}/${{ inputs.WorkingDirectory }}
       with:
         Debug: ${{ inputs.Debug }}
         Prerelease: ${{ inputs.Prerelease }}
