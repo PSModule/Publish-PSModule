@@ -106,7 +106,7 @@ runs:
         Prerelease: ${{ inputs.Prerelease }}
         Verbose: ${{ inputs.Verbose }}
         Version: ${{ inputs.Version }}
-        WorkingDirectory: ${{ inputs.WorkingDirectory }}
+        WorkingDirectory: ${{ github.workspace }}/${{ inputs.WorkingDirectory }}
         Script: |
           # Publish-PSModule
           ${{ github.action_path }}/scripts/main.ps1
