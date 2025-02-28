@@ -100,13 +100,13 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ github.workspace }}/${{ inputs.WorkingDirectory }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
       with:
         Debug: ${{ inputs.Debug }}
         Prerelease: ${{ inputs.Prerelease }}
         Verbose: ${{ inputs.Verbose }}
         Version: ${{ inputs.Version }}
-        WorkingDirectory: ${{ github.workspace }}/${{ inputs.WorkingDirectory }}
+        WorkingDirectory: ${{ inputs.WorkingDirectory }}
         Script: |
           # Publish-PSModule
           ${{ github.action_path }}/scripts/main.ps1
