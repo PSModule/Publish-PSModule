@@ -346,11 +346,10 @@
         LogGroup 'Publish-ToPSGallery' {
             if ($createPrerelease) {
                 $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
-                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
             } else {
-                $publishPSVersion = $newVersion.ToString()
-                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$($newVersion.ToString())"
+                $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
             }
+            $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
             Write-Output "Publish module to PowerShell Gallery using [$APIKey]"
             if ($whatIf) {
                 Write-Output "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey"
