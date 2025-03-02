@@ -20,7 +20,7 @@ LogGroup 'Loading inputs' {
         Name       = $name
         ModulePath = $modulePath
         APIKey     = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
-    } | Format-List
+    } | Format-List | Out-String
 
 }
 
