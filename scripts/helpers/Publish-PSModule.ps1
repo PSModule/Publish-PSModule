@@ -197,14 +197,13 @@
             } -Catch {
                 throw $_
             }
-            $psGalleryVersion = New-PSSemVer -Version $latest.Version
+            $psGalleryVersion = New-PSSemVer -Version $latest.Version.ToString()
         } catch {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'PSGallery version:'
-        Write-Output ($psGalleryVersion | Format-Table | Out-String)
         Write-Output $psGalleryVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
