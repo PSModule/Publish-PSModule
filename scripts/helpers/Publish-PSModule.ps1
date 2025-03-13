@@ -183,7 +183,6 @@
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'GitHub version:'
-        Write-Output ($ghReleaseVersion | Format-Table | Out-String)
         Write-Output $ghReleaseVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
@@ -197,7 +196,7 @@
             Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
             Write-Warning $_.Exception.Message
         }
-        if ($latest) {
+        if ($null -ne $latest) {
             $psGalleryVersion = New-PSSemVer -Version $latest.Version.ToString()
         } else {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
@@ -227,7 +226,6 @@
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'Manifest version:'
-        Write-Output ($manifestVersion | Format-Table | Out-String)
         Write-Output $manifestVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
