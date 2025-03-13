@@ -189,16 +189,17 @@
     }
 
     LogGroup 'Get latest version - PSGallery' {
-        try {
-            Retry -Count 5 -Delay 10 {
-                Write-Output "Finding module [$Name] in the PowerShell Gallery."
-                $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
-                Write-Output ($latest | Format-Table | Out-String)
-            } -Catch {
-                throw $_
-            }
+        Retry -Count 5 -Delay 10 {
+            Write-Output "Finding module [$Name] in the PowerShell Gallery."
+            $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
+            Write-Output ($latest | Format-Table | Out-String)
+        } -Catch {
+            Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
+            Write-Warning $_.Exception.Message
+        }
+        if ($latest) {
             $psGalleryVersion = New-PSSemVer -Version $latest.Version.ToString()
-        } catch {
+        } else {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
         }
