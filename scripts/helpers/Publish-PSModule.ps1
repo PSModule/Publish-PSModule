@@ -200,7 +200,6 @@
                 if ($i -eq $count) {
                     Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
                     Write-Warning $_.Exception.Message
-                    throw $_
                 }
                 Start-Sleep -Seconds $delay
             }
