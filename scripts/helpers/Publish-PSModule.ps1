@@ -197,7 +197,7 @@
             Write-Warning $_.Exception.Message
         }
         if ($null -ne $latest) {
-            $psGalleryVersion = New-PSSemVer -Version $latest.Version.ToString()
+            $psGalleryVersion = New-PSSemVer -Version ($latest.Version).ToString()
         } else {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
