@@ -11,7 +11,7 @@
     #>
     [OutputType([void])]
     [CmdletBinding()]
-    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub, PSSemVer
+    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, GitHub, PSSemVer
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
@@ -188,13 +188,22 @@
     }
 
     LogGroup 'Get latest version - PSGallery' {
-        Retry -Count 5 -Delay 10 {
-            Write-Output "Finding module [$Name] in the PowerShell Gallery."
-            $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
-            Write-Output ($latest | Format-Table | Out-String)
-        } -Catch {
-            Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
-            Write-Warning $_.Exception.Message
+        $count = 5
+        $delay = 10
+        for ($i = 1; $i -le $count; $i++) {
+            try {
+                Write-Output "Finding module [$Name] in the PowerShell Gallery."
+                $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
+                Write-Output ($latest | Format-Table | Out-String)
+                break
+            } catch {
+                if ($i -eq $count) {
+                    Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
+                    Write-Warning $_.Exception.Message
+                    throw $_
+                }
+                Start-Sleep -Seconds $delay
+            }
         }
         if ($latest.Version) {
             $psGalleryVersion = New-PSSemVer -Version ($latest.Version).ToString()
