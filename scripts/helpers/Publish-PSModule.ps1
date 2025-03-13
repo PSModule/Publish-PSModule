@@ -194,7 +194,7 @@
             try {
                 Write-Output "Finding module [$Name] in the PowerShell Gallery."
                 $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
-                Write-Output ($latest | Format-Table | Out-String)
+                Write-Output "$($latest | Format-Table | Out-String)"
                 break
             } catch {
                 if ($i -eq $count) {
