@@ -196,7 +196,7 @@
             Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
             Write-Warning $_.Exception.Message
         }
-        if (-not [string]::IsNullOrEmpty($latest.Name)) {
+        if ($latest.Version) {
             $psGalleryVersion = New-PSSemVer -Version ($latest.Version).ToString()
         } else {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
