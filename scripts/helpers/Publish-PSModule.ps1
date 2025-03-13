@@ -189,6 +189,7 @@
     }
 
     LogGroup 'Get latest version - PSGallery' {
+        $latest = $null
         try {
             Retry -Count 5 -Delay 10 {
                 Write-Output "Finding module [$Name] in the PowerShell Gallery."
