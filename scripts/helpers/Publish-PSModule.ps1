@@ -35,58 +35,29 @@
     )
 
     LogGroup 'Set configuration' {
-        if (-not (Test-Path -Path $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile -PathType Leaf)) {
-            Write-Output "Configuration file not found at [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile]"
-        } else {
-            Write-Output "Reading from configuration file [$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile]"
-            $configuration = ConvertFrom-Yaml -Yaml (Get-Content $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile -Raw)
-        }
+        $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
+        $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
+        $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
+        $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
+        $versionPrefix = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
+        $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
+        $ignoreLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels -split ',' | ForEach-Object { $_.Trim() }
+        $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
+        $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
+        $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
 
-        $autoCleanup = ($configuration.AutoCleanup | IsNotNullOrEmpty) ?
-        $configuration.AutoCleanup -eq 'true' :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
-        $autoPatching = ($configuration.AutoPatching | IsNotNullOrEmpty) ?
-        $configuration.AutoPatching -eq 'true' :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
-        $datePrereleaseFormat = ($configuration.DatePrereleaseFormat | IsNotNullOrEmpty) ?
-        $configuration.DatePrereleaseFormat :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
-        $incrementalPrerelease = ($configuration.IncrementalPrerelease | IsNotNullOrEmpty) ?
-        $configuration.IncrementalPrerelease -eq 'true' :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
-        $versionPrefix = ($configuration.VersionPrefix | IsNotNullOrEmpty) ?
-        $configuration.VersionPrefix :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
-        $whatIf = ($configuration.WhatIf | IsNotNullOrEmpty) ?
-        $configuration.WhatIf -eq 'true' :
-        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
-
-        $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ?
-            $configuration.IgnoreLabels :
-            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ?
-            $configuration.MajorLabels :
-            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $minorLabels = (($configuration.MinorLabels | IsNotNullOrEmpty) ?
-            $configuration.MinorLabels :
-            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $patchLabels = (($configuration.PatchLabels | IsNotNullOrEmpty) ?
-            $configuration.PatchLabels :
-            $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
-
-        Write-Output '-------------------------------------------------'
-        Write-Output "Auto cleanup enabled:           [$autoCleanup]"
-        Write-Output "Auto patching enabled:          [$autoPatching]"
-        Write-Output "Date-based prerelease format:   [$datePrereleaseFormat]"
-        Write-Output "Incremental prerelease enabled: [$incrementalPrerelease]"
-        Write-Output "Version prefix:                 [$versionPrefix]"
-        Write-Output "What if mode:                   [$whatIf]"
-        Write-Output ''
-        Write-Output "Ignore labels:                  [$($ignoreLabels -join ', ')]"
-        Write-Output "Major labels:                   [$($majorLabels -join ', ')]"
-        Write-Output "Minor labels:                   [$($minorLabels -join ', ')]"
-        Write-Output "Patch labels:                   [$($patchLabels -join ', ')]"
-        Write-Output '-------------------------------------------------'
+        [pscustomobject]@{
+            AutoCleanup           = $autoCleanup
+            AutoPatching          = $autoPatching
+            DatePrereleaseFormat  = $datePrereleaseFormat
+            IncrementalPrerelease = $incrementalPrerelease
+            VersionPrefix         = $versionPrefix
+            WhatIf                = $whatIf
+            IgnoreLabels          = $ignoreLabels
+            MajorLabels           = $majorLabels
+            MinorLabels           = $minorLabels
+            PatchLabels           = $patchLabels
+        } | Format-List | Out-String
     }
 
     LogGroup 'Event information - JSON' {

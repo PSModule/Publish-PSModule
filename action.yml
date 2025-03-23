@@ -106,5 +106,4 @@ runs:
         Verbose: ${{ inputs.Verbose }}
         Version: ${{ inputs.Version }}
         WorkingDirectory: ${{ inputs.WorkingDirectory }}
-        Script: |
-          ${{ github.action_path }}/scripts/main.ps1
+        Script: ${{ github.action_path }}/scripts/main.ps1

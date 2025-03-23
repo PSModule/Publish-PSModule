@@ -36,7 +36,7 @@ prerelease with the branch name (in normalized form) as the prerelease name. By 
   - `fix`
 
 The types of labels used for the types of prereleases can be configured using the `MajorLabels`, `MinorLabels` and `PatchLabels`
-parameters/settings in the configuration file. See the [Usage](#usage) section for more information.
+parameters/settings. See the [Usage](#usage) section for more information.
 
 When a pull request is merged into the default branch, the action will create a release based on the labels and clean up any previous
 prereleases that was created.
@@ -50,7 +50,6 @@ The action can be configured using the following settings:
 | `APIKey` | PowerShell Gallery API Key. | `true` | |
 | `AutoCleanup`| Control wether to automatically cleanup prereleases. If disabled, the action will not remove any prereleases. | `false` | `true` |
 | `AutoPatching` | Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label. | `false` | `true` |
-| `ConfigurationFile` | The path to the configuration file. Settings in the configuration file take precedence over the action inputs. | `false` | `.github\auto-release.yml` |
 | `DatePrereleaseFormat` | The format to use for the prerelease number using [.NET DateTime format strings](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings). | `false` | `''` |
 | `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `false` | `NoRelease` |
 | `IncrementalPrerelease` | Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch. | `false` | `true` |
@@ -66,20 +65,6 @@ The action can be configured using the following settings:
 | `Version` | Specifies the version of the GitHub module to be installed. The value must be an exact version. | | `false` |
 | `Prerelease` | Allow prerelease versions if available. | `'false'` | `false` |
 | `WorkingDirectory` | The working directory where the script runs. | `'false'`    | `'.'` |
-
-### Configuration file
-
-The configuration file is a YAML file that can be used to configure the action.
-By default, the configuration file is expected at `.github\auto-release.yml`, which can be changed using the `ConfigurationFile` setting.
-The actions configuration can be change by altering the settings in the configuration file.
-
-```yaml
-DatePrereleaseFormat: 'yyyyMMddHHmm'
-IncrementalPrerelease: false
-VersionPrefix: ''
-```
-
-This example uses the date format for the prerelease, disables the incremental prerelease and removes the version prefix.
 
 ## Example
 
