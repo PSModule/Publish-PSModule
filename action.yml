@@ -24,10 +24,6 @@ inputs:
     description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
     required: false
     default: 'true'
-  ConfigurationFile:
-    description: The path to the configuration file. Settings in the configuration file take precedence over the action inputs.
-    required: false
-    default: .github/auto-release.yml
   DatePrereleaseFormat:
     description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
     required: false
@@ -94,7 +90,6 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey: ${{ inputs.APIKey }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_ConfigurationFile: ${{ inputs.ConfigurationFile }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
@@ -105,11 +100,11 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
       with:
+        Name: Publish-PSModule
         Debug: ${{ inputs.Debug }}
         Prerelease: ${{ inputs.Prerelease }}
         Verbose: ${{ inputs.Verbose }}
         Version: ${{ inputs.Version }}
         WorkingDirectory: ${{ inputs.WorkingDirectory }}
         Script: |
-          # Publish-PSModule
           ${{ github.action_path }}/scripts/main.ps1
