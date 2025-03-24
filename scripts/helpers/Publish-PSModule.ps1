@@ -37,8 +37,8 @@
     LogGroup 'Set configuration' {
         $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
         $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
-        $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
         $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
+        $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
         $versionPrefix = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
         $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
         $ignoreLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels -split ',' | ForEach-Object { $_.Trim() }
@@ -49,8 +49,8 @@
         [pscustomobject]@{
             AutoCleanup           = $autoCleanup
             AutoPatching          = $autoPatching
-            DatePrereleaseFormat  = $datePrereleaseFormat
             IncrementalPrerelease = $incrementalPrerelease
+            DatePrereleaseFormat  = $datePrereleaseFormat
             VersionPrefix         = $versionPrefix
             WhatIf                = $whatIf
             IgnoreLabels          = $ignoreLabels
