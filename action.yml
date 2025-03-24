@@ -24,18 +24,18 @@ inputs:
     description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
     required: false
     default: 'true'
-  DatePrereleaseFormat:
-    description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
-    required: false
-    default: ''
-  IgnoreLabels:
-    description: A comma separated list of labels that do not trigger a release.
-    required: false
-    default: NoRelease
   IncrementalPrerelease:
     description: Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
     required: false
     default: 'true'
+  DatePrereleaseFormat:
+    description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
+    required: false
+    default: ''
+  VersionPrefix:
+    description: The prefix to use for the version number.
+    required: false
+    default: v
   MajorLabels:
     description: A comma separated list of labels that trigger a major release.
     required: false
@@ -48,10 +48,10 @@ inputs:
     description: A comma separated list of labels that trigger a patch release.
     required: false
     default: patch, fix
-  VersionPrefix:
-    description: The prefix to use for the version number.
+  IgnoreLabels:
+    description: A comma separated list of labels that do not trigger a release.
     required: false
-    default: v
+    default: NoRelease
   WhatIf:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
