@@ -11,7 +11,7 @@
     #>
     [OutputType([void])]
     [CmdletBinding()]
-    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, Retry, GitHub, PSSemVer
+    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, GitHub, PSSemVer
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
@@ -35,69 +35,40 @@
     )
 
     LogGroup 'Set configuration' {
-        if (-not (Test-Path -Path $env:GITHUB_ACTION_INPUT_ConfigurationFile -PathType Leaf)) {
-            Write-Output "Configuration file not found at [$env:GITHUB_ACTION_INPUT_ConfigurationFile]"
-        } else {
-            Write-Output "Reading from configuration file [$env:GITHUB_ACTION_INPUT_ConfigurationFile]"
-            $configuration = ConvertFrom-Yaml -Yaml (Get-Content $env:GITHUB_ACTION_INPUT_ConfigurationFile -Raw)
-        }
+        $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
+        $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
+        $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
+        $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
+        $versionPrefix = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
+        $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
+        $ignoreLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels -split ',' | ForEach-Object { $_.Trim() }
+        $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
+        $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
+        $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
 
-        $autoCleanup = ($configuration.AutoCleanup | IsNotNullOrEmpty) ?
-        $configuration.AutoCleanup -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_AutoCleanup -eq 'true'
-        $autoPatching = ($configuration.AutoPatching | IsNotNullOrEmpty) ?
-        $configuration.AutoPatching -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_AutoPatching -eq 'true'
-        $datePrereleaseFormat = ($configuration.DatePrereleaseFormat | IsNotNullOrEmpty) ?
-        $configuration.DatePrereleaseFormat :
-        $env:GITHUB_ACTION_INPUT_DatePrereleaseFormat
-        $incrementalPrerelease = ($configuration.IncrementalPrerelease | IsNotNullOrEmpty) ?
-        $configuration.IncrementalPrerelease -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_IncrementalPrerelease -eq 'true'
-        $versionPrefix = ($configuration.VersionPrefix | IsNotNullOrEmpty) ?
-        $configuration.VersionPrefix :
-        $env:GITHUB_ACTION_INPUT_VersionPrefix
-        $whatIf = ($configuration.WhatIf | IsNotNullOrEmpty) ?
-        $configuration.WhatIf -eq 'true' :
-        $env:GITHUB_ACTION_INPUT_WhatIf -eq 'true'
-
-        $ignoreLabels = (($configuration.IgnoreLabels | IsNotNullOrEmpty) ?
-            $configuration.IgnoreLabels :
-            $env:GITHUB_ACTION_INPUT_IgnoreLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $majorLabels = (($configuration.MajorLabels | IsNotNullOrEmpty) ?
-            $configuration.MajorLabels :
-            $env:GITHUB_ACTION_INPUT_MajorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $minorLabels = (($configuration.MinorLabels | IsNotNullOrEmpty) ?
-            $configuration.MinorLabels :
-            $env:GITHUB_ACTION_INPUT_MinorLabels) -split ',' | ForEach-Object { $_.Trim() }
-        $patchLabels = (($configuration.PatchLabels | IsNotNullOrEmpty) ?
-            $configuration.PatchLabels :
-            $env:GITHUB_ACTION_INPUT_PatchLabels) -split ',' | ForEach-Object { $_.Trim() }
-
-        Write-Output '-------------------------------------------------'
-        Write-Output "Auto cleanup enabled:           [$autoCleanup]"
-        Write-Output "Auto patching enabled:          [$autoPatching]"
-        Write-Output "Date-based prerelease format:   [$datePrereleaseFormat]"
-        Write-Output "Incremental prerelease enabled: [$incrementalPrerelease]"
-        Write-Output "Version prefix:                 [$versionPrefix]"
-        Write-Output "What if mode:                   [$whatIf]"
-        Write-Output ''
-        Write-Output "Ignore labels:                  [$($ignoreLabels -join ', ')]"
-        Write-Output "Major labels:                   [$($majorLabels -join ', ')]"
-        Write-Output "Minor labels:                   [$($minorLabels -join ', ')]"
-        Write-Output "Patch labels:                   [$($patchLabels -join ', ')]"
-        Write-Output '-------------------------------------------------'
+        [pscustomobject]@{
+            AutoCleanup           = $autoCleanup
+            AutoPatching          = $autoPatching
+            IncrementalPrerelease = $incrementalPrerelease
+            DatePrereleaseFormat  = $datePrereleaseFormat
+            VersionPrefix         = $versionPrefix
+            WhatIf                = $whatIf
+            IgnoreLabels          = $ignoreLabels
+            MajorLabels           = $majorLabels
+            MinorLabels           = $minorLabels
+            PatchLabels           = $patchLabels
+        } | Format-List | Out-String
     }
 
     LogGroup 'Event information - JSON' {
         $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
-        $githubEventJson | Format-List
+        $githubEventJson | Format-List | Out-String
     }
 
     LogGroup 'Event information - Object' {
         $githubEvent = $githubEventJson | ConvertFrom-Json
         $pull_request = $githubEvent.pull_request
-        $githubEvent | Format-List
+        $githubEvent | Format-List | Out-String
     }
 
     LogGroup 'Event information - Details' {
@@ -127,13 +98,13 @@
     }
 
     LogGroup 'Pull request - details' {
-        $pull_request | Format-List
+        $pull_request | Format-List | Out-String
     }
 
     LogGroup 'Pull request - Labels' {
         $labels = @()
         $labels += $pull_request.labels.name
-        $labels | Format-List
+        $labels | Format-List | Out-String
     }
 
     LogGroup 'Calculate release type' {
@@ -170,10 +141,10 @@
             Write-Error 'Failed to list all releases for the repo.'
             exit $LASTEXITCODE
         }
-        $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table
+        $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table | Out-String
 
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
-        $latestRelease | Format-List
+        $latestRelease | Format-List | Out-String
         $ghReleaseVersionString = $latestRelease.tagName
         if ($ghReleaseVersionString | IsNotNullOrEmpty) {
             $ghReleaseVersion = New-PSSemVer -Version $ghReleaseVersionString
@@ -183,28 +154,35 @@
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'GitHub version:'
-        Write-Output ($ghReleaseVersion | Format-Table | Out-String)
         Write-Output $ghReleaseVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version - PSGallery' {
-        try {
-            Retry -Count 5 -Delay 10 {
+        $count = 5
+        $delay = 10
+        for ($i = 1; $i -le $count; $i++) {
+            try {
                 Write-Output "Finding module [$Name] in the PowerShell Gallery."
                 $latest = Find-PSResource -Name $Name -Repository PSGallery -Verbose:$false
-                Write-Output ($latest | Format-Table | Out-String)
-            } -Catch {
-                throw $_
+                Write-Output "$($latest | Format-Table | Out-String)"
+                break
+            } catch {
+                if ($i -eq $count) {
+                    Write-Warning "Failed to find the module [$Name] in the PowerShell Gallery."
+                    Write-Warning $_.Exception.Message
+                }
+                Start-Sleep -Seconds $delay
             }
-            $psGalleryVersion = New-PSSemVer -Version $latest.Version
-        } catch {
+        }
+        if ($latest.Version) {
+            $psGalleryVersion = New-PSSemVer -Version ($latest.Version).ToString()
+        } else {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'PSGallery version:'
-        Write-Output ($psGalleryVersion | Format-Table | Out-String)
         Write-Output $psGalleryVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
@@ -227,7 +205,6 @@
         }
         Write-Output '-------------------------------------------------'
         Write-Output 'Manifest version:'
-        Write-Output ($manifestVersion | Format-Table | Out-String)
         Write-Output $manifestVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
@@ -346,11 +323,10 @@
         LogGroup 'Publish-ToPSGallery' {
             if ($createPrerelease) {
                 $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
-                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
             } else {
-                $publishPSVersion = $newVersion.ToString()
-                $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$($newVersion.ToString())"
+                $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
             }
+            $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$Name/$publishPSVersion"
             Write-Output "Publish module to PowerShell Gallery using [$APIKey]"
             if ($whatIf) {
                 Write-Output "Publish-PSResource -Path $ModulePath -Repository PSGallery -ApiKey $APIKey"
@@ -415,7 +391,7 @@
 
     LogGroup 'List prereleases using the same name' {
         $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
-        $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table
+        $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
     }
 
     if ((($closedPullRequest -or $createRelease) -and $autoCleanup) -or $whatIf) {
