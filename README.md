@@ -65,6 +65,19 @@ The action can be configured using the following settings:
 | `Version` | Specifies the version of the GitHub module to be installed. The value must be an exact version. | | `false` |
 | `Prerelease` | Allow prerelease versions if available. | `'false'` | `false` |
 | `WorkingDirectory` | The working directory where the script runs. | `'false'`    | `'.'` |
+| `UsePRTitleAsReleaseName` | When enabled, uses the pull request title as the name for the GitHub release. If not set or the PR has no title, the version string is used. | `false` | false |
+| `UsePRBodyAsReleaseNotes` | When enabled, uses the pull request body as the release notes for the GitHub release. If not set or the PR has no body, the release notes are auto-generated. | `true` | false |
+| `UsePRTitleAsNotesHeading` | When enabled, the release notes will begin with the pull request title as a H1 heading followed by the pull request body, including a reference to the PR number. | `true` | false |
+
+## Release Title and Notes Logic
+
+- If `UsePRTitleAsReleaseName` is enabled and the pull request has a title, the release name will be set to the PR title. Otherwise, it defaults to the version string.
+- If `UsePRTitleAsNotesHeading` is enabled and the PR has both a title and body, the release notes will start with the PR title as a heading (with PR number), followed by the PR body.
+- If only `UsePRBodyAsReleaseNotes` is enabled and the PR has a body, the release notes will use the PR body.
+- If neither is enabled or the PR has no body, the release notes are auto-generated (`--generate-notes`).
+- The GitHub CLI command for creating the release is constructed stepwise, with `--title`, `--notes` (if provided), and `--generate-notes` as a fallback, matching the logic from Auto-Release.
+
+The action outputs the calculated release name and body in the logs for visibility and testing.
 
 ## Example
 

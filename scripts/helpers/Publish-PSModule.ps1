@@ -45,18 +45,24 @@
         $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
         $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
         $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
+        $usePRBodyAsReleaseNotes = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes -eq 'true'
+        $usePRTitleAsReleaseName = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName -eq 'true'
+        $usePRTitleAsNotesHeading = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading -eq 'true'
 
         [pscustomobject]@{
-            AutoCleanup           = $autoCleanup
-            AutoPatching          = $autoPatching
-            IncrementalPrerelease = $incrementalPrerelease
-            DatePrereleaseFormat  = $datePrereleaseFormat
-            VersionPrefix         = $versionPrefix
-            WhatIf                = $whatIf
-            IgnoreLabels          = $ignoreLabels
-            MajorLabels           = $majorLabels
-            MinorLabels           = $minorLabels
-            PatchLabels           = $patchLabels
+            AutoCleanup              = $autoCleanup
+            AutoPatching             = $autoPatching
+            IncrementalPrerelease    = $incrementalPrerelease
+            DatePrereleaseFormat     = $datePrereleaseFormat
+            VersionPrefix            = $versionPrefix
+            WhatIf                   = $whatIf
+            IgnoreLabels             = $ignoreLabels
+            MajorLabels              = $majorLabels
+            MinorLabels              = $minorLabels
+            PatchLabels              = $patchLabels
+            UsePRBodyAsReleaseNotes  = $usePRBodyAsReleaseNotes
+            UsePRTitleAsReleaseName  = $usePRTitleAsReleaseName
+            UsePRTitleAsNotesHeading = $usePRTitleAsNotesHeading
         } | Format-List | Out-String
     }
 
@@ -355,25 +361,45 @@
 
         LogGroup 'New-GitHubRelease' {
             Write-Output 'Create new GitHub release'
-            if ($createPrerelease) {
-                if ($whatIf) {
-                    Write-Output "WhatIf: gh release create $newVersion --title $newVersion --target $prHeadRef --generate-notes --prerelease"
-                } else {
-                    $releaseURL = gh release create $newVersion --title $newVersion --target $prHeadRef --generate-notes --prerelease
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Failed to create the release [$newVersion]."
-                        exit $LASTEXITCODE
-                    }
-                }
+            $releaseCreateCommand = @('release', 'create', $newVersion.ToString())
+
+            # Add title parameter
+            if ($usePRTitleAsReleaseName -and $pull_request.title) {
+                $prTitle = $pull_request.title
+                $releaseCreateCommand += @('--title', $prTitle)
+                Write-Output "Using PR title as release name: [$prTitle]"
             } else {
-                if ($whatIf) {
-                    Write-Output "WhatIf: gh release create $newVersion --title $newVersion --generate-notes"
-                } else {
-                    $releaseURL = gh release create $newVersion --title $newVersion --generate-notes
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Failed to create the release [$newVersion]."
-                        exit $LASTEXITCODE
-                    }
+                $releaseCreateCommand += @('--title', $newVersion.ToString())
+            }
+
+            # Add notes parameter
+            if ($usePRTitleAsNotesHeading -and $pull_request.title -and $pull_request.body) {
+                $prTitle = $pull_request.title
+                $prNumber = $pull_request.number
+                $prBody = $pull_request.body
+                $notes = "# $prTitle (#$prNumber)`n`n$prBody"
+                $releaseCreateCommand += @('--notes', $notes)
+                Write-Output 'Using PR title as H1 heading with link and body as release notes'
+            } elseif ($usePRBodyAsReleaseNotes -and $pull_request.body) {
+                $prBody = $pull_request.body
+                $releaseCreateCommand += @('--notes', $prBody)
+                Write-Output 'Using PR body as release notes'
+            } else {
+                $releaseCreateCommand += '--generate-notes'
+            }
+
+            # Add remaining parameters
+            if ($createPrerelease) {
+                $releaseCreateCommand += @('--target', $prHeadRef, '--prerelease')
+            }
+
+            if ($whatIf) {
+                Write-Output "WhatIf: gh $($releaseCreateCommand -join ' ')"
+            } else {
+                $releaseURL = gh @releaseCreateCommand
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "Failed to create the release [$newVersion]."
+                    exit $LASTEXITCODE
                 }
             }
             if ($whatIf) {

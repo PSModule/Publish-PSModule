@@ -75,6 +75,18 @@ inputs:
     description: The working directory where the script will run from.
     required: false
     default: '.'
+  UsePRTitleAsReleaseName:
+    description: When enabled, uses the pull request title as the name for the GitHub release. If not set, the version string is used.
+    required: false
+    default: 'false'
+  UsePRBodyAsReleaseNotes:
+    description: When enabled, uses the pull request body as the release notes for the GitHub release. If not set, the release notes are auto-generated.
+    required: false
+    default: 'true'
+  UsePRTitleAsNotesHeading:
+    description: When enabled, the release notes will begin with the pull request title as a H1 heading followed by the pull request body. The title will reference the pull request number.
+    required: false
+    default: 'true'
 
 runs:
   using: composite
@@ -99,6 +111,9 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes: ${{ inputs.UsePRBodyAsReleaseNotes }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName: ${{ inputs.UsePRTitleAsReleaseName }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading: ${{ inputs.UsePRTitleAsNotesHeading }}
       with:
         Name: Publish-PSModule
         Debug: ${{ inputs.Debug }}
