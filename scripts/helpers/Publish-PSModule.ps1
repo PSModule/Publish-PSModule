@@ -11,7 +11,6 @@
     #>
     [OutputType([void])]
     [CmdletBinding()]
-    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, GitHub, PSSemVer
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
