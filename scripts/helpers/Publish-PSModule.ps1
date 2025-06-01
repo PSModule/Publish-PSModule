@@ -11,7 +11,6 @@
     #>
     [OutputType([void])]
     [CmdletBinding()]
-    #Requires -Modules Utilities, PowerShellGet, Microsoft.PowerShell.PSResourceGet, GitHub, PSSemVer
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSReviewUnusedParameter', '', Scope = 'Function',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
@@ -146,7 +145,7 @@
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
         $latestRelease | Format-List | Out-String
         $ghReleaseVersionString = $latestRelease.tagName
-        if ($ghReleaseVersionString | IsNotNullOrEmpty) {
+        if (-not [string]::IsNullOrEmpty($ghReleaseVersionString)) {
             $ghReleaseVersion = New-PSSemVer -Version $ghReleaseVersionString
         } else {
             Write-Warning 'Could not find the latest release version. Using ''0.0.0'' as the version.'
@@ -198,7 +197,7 @@
         try {
             $manifestVersion = New-PSSemVer -Version (Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
         } catch {
-            if ($manifestVersion | IsNullOrEmpty) {
+            if ([string]::IsNullOrEmpty($manifestVersion)) {
                 Write-Warning 'Could not find the module version in the manifest. Using ''0.0.0'' as the version.'
                 $manifestVersion = New-PSSemVer -Version '0.0.0'
             }
@@ -249,7 +248,7 @@
             $newVersion.Prerelease = $prereleaseName
             Write-Output "Partial new version: [$newVersion]"
 
-            if ($datePrereleaseFormat | IsNotNullOrEmpty) {
+            if (-not [string]::IsNullOrEmpty($datePrereleaseFormat)) {
                 Write-Output "Using date-based prerelease: [$datePrereleaseFormat]."
                 $newVersion.Prerelease += "$(Get-Date -Format $datePrereleaseFormat)"
                 Write-Output "Partial new version: [$newVersion]"
