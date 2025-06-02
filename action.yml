@@ -56,7 +56,6 @@ inputs:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
     default: 'false'
-
   WorkingDirectory:
     description: The working directory where the script will run from.
     required: false
