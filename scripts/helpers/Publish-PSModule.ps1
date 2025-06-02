@@ -1,13 +1,13 @@
 ﻿function Publish-PSModule {
     <#
-    .SYNOPSIS
-    Publishes a module to the PowerShell Gallery and GitHub Pages.
+        .SYNOPSIS
+        Publishes a module to the PowerShell Gallery and creates a GitHub Release.
 
-    .DESCRIPTION
-    Publishes a module to the PowerShell Gallery and GitHub Pages.
+        .DESCRIPTION
+        Publishes a module to the PowerShell Gallery and creates a GitHub Release.
 
-    .EXAMPLE
-    Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
+        .EXAMPLE
+        Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
     #>
     [OutputType([void])]
     [CmdletBinding()]
@@ -18,6 +18,10 @@
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSUseDeclaredVarsMoreThanAssignments', '',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
+    )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSAvoidUsingWriteHost', '',
+        Justification = 'Log outputs to GitHub Actions logs.'
     )]
     param(
         # Name of the module to process.
@@ -33,7 +37,7 @@
         [string] $APIKey
     )
 
-    LogGroup 'Set configuration' {
+    Set-GitHubLogGroup 'Set configuration' {
         $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
         $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
         $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
@@ -59,18 +63,18 @@
         } | Format-List | Out-String
     }
 
-    LogGroup 'Event information - JSON' {
+    Set-GitHubLogGroup 'Event information - JSON' {
         $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
         $githubEventJson | Format-List | Out-String
     }
 
-    LogGroup 'Event information - Object' {
+    Set-GitHubLogGroup 'Event information - Object' {
         $githubEvent = $githubEventJson | ConvertFrom-Json
         $pull_request = $githubEvent.pull_request
         $githubEvent | Format-List | Out-String
     }
 
-    LogGroup 'Event information - Details' {
+    Set-GitHubLogGroup 'Event information - Details' {
         $defaultBranchName = (gh repo view --json defaultBranchRef | ConvertFrom-Json | Select-Object -ExpandProperty defaultBranchRef).name
         $isPullRequest = $githubEvent.PSObject.Properties.Name -Contains 'pull_request'
         if (-not ($isPullRequest -or $whatIf)) {
@@ -96,17 +100,17 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Pull request - details' {
+    Set-GitHubLogGroup 'Pull request - details' {
         $pull_request | Format-List | Out-String
     }
 
-    LogGroup 'Pull request - Labels' {
+    Set-GitHubLogGroup 'Pull request - Labels' {
         $labels = @()
         $labels += $pull_request.labels.name
         $labels | Format-List | Out-String
     }
 
-    LogGroup 'Calculate release type' {
+    Set-GitHubLogGroup 'Calculate release type' {
         $createRelease = $isMerged -and $targetIsDefaultBranch
         $closedPullRequest = $prIsClosed -and -not $isMerged
         $createPrerelease = $labels -Contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
@@ -134,7 +138,7 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Get latest version - GitHub' {
+    Set-GitHubLogGroup 'Get latest version - GitHub' {
         $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to list all releases for the repo.'
@@ -157,7 +161,7 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Get latest version - PSGallery' {
+    Set-GitHubLogGroup 'Get latest version - PSGallery' {
         $count = 5
         $delay = 10
         for ($i = 1; $i -le $count; $i++) {
@@ -186,7 +190,7 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Get latest version - Manifest' {
+    Set-GitHubLogGroup 'Get latest version - Manifest' {
         Add-PSModulePath -Path (Split-Path -Path $ModulePath -Parent)
         $manifestFilePath = Join-Path $ModulePath "$Name.psd1"
         Write-Output "Module manifest file path: [$manifestFilePath]"
@@ -208,7 +212,7 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Get latest version' {
+    Set-GitHubLogGroup 'Get latest version' {
         Write-Output "GitHub:    [$($ghReleaseVersion.ToString())]"
         Write-Output "PSGallery: [$($psGalleryVersion.ToString())]"
         Write-Output "Manifest:  [$($manifestVersion.ToString())] (ignored)"
@@ -220,7 +224,7 @@
         Write-Output '-------------------------------------------------'
     }
 
-    LogGroup 'Calculate new version' {
+    Set-GitHubLogGroup 'Calculate new version' {
         # - Increment based on label on PR
         $newVersion = New-PSSemVer -Version $latestVersion
         $newVersion.Prefix = $versionPrefix
@@ -302,7 +306,7 @@
     }
     Write-Output "New version is [$($newVersion.ToString())]"
 
-    LogGroup 'Update module manifest' {
+    Set-GitHubLogGroup 'Update module manifest' {
         Write-Output 'Bump module version -> module metadata: Update-ModuleMetadata'
         $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
         Set-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
@@ -314,12 +318,12 @@
         Show-FileContent -Path $manifestFilePath
     }
 
-    LogGroup 'Install module dependencies' {
+    Set-GitHubLogGroup 'Install module dependencies' {
         Resolve-PSModuleDependency -ManifestFilePath $manifestFilePath
     }
 
     if ($createPrerelease -or $createRelease -or $whatIf) {
-        LogGroup 'Publish-ToPSGallery' {
+        Set-GitHubLogGroup 'Publish-ToPSGallery' {
             if ($createPrerelease) {
                 $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
             } else {
@@ -343,7 +347,7 @@
                     " PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
                 )
             } else {
-                Write-GitHubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
+                Write-Host "::notice::Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
                 gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
@@ -352,7 +356,7 @@
             }
         }
 
-        LogGroup 'New-GitHubRelease' {
+        Set-GitHubLogGroup 'New-GitHubRelease' {
             Write-Output 'Create new GitHub release'
             if ($createPrerelease) {
                 if ($whatIf) {
@@ -384,17 +388,17 @@
                     exit $LASTEXITCODE
                 }
             }
-            Write-GitHubNotice "Release created: [$newVersion]"
+            Write-Host "::notice::Release created: [$newVersion]"
         }
     }
 
-    LogGroup 'List prereleases using the same name' {
+    Set-GitHubLogGroup 'List prereleases using the same name' {
         $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
     }
 
     if ((($closedPullRequest -or $createRelease) -and $autoCleanup) -or $whatIf) {
-        LogGroup "Cleanup prereleases for [$prereleaseName]" {
+        Set-GitHubLogGroup "Cleanup prereleases for [$prereleaseName]" {
             foreach ($rel in $prereleasesToCleanup) {
                 $relTagName = $rel.tagName
                 Write-Output "Deleting prerelease:            [$relTagName]."
