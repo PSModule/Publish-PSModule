@@ -83,7 +83,8 @@ runs:
       uses: PSModule/Install-PSModuleHelpers@v1
 
     - name: Run Publish-PSModule
-      uses: PSModule/GitHub-Script@v1
+      shell: pwsh
+      working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath: ${{ inputs.ModulePath }}
@@ -99,11 +100,4 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
-      with:
-        Name: Publish-PSModule
-        Debug: ${{ inputs.Debug }}
-        Prerelease: ${{ inputs.Prerelease }}
-        Verbose: ${{ inputs.Verbose }}
-        Version: ${{ inputs.Version }}
-        WorkingDirectory: ${{ inputs.WorkingDirectory }}
-        Script: ${{ github.action_path }}/scripts/main.ps1
+      run: ${{ github.action_path }}/scripts/main.ps1

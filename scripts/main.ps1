@@ -18,14 +18,14 @@ for ($i = 0; $i -lt $retryCount; $i++) {
 }
 
 $path = (Join-Path -Path $PSScriptRoot -ChildPath 'helpers')
-LogGroup "Loading helper scripts from [$path]" {
+Set-GitHubLogGroup "Loading helper scripts from [$path]" {
     Get-ChildItem -Path $path -Filter '*.ps1' -Recurse | ForEach-Object {
         Write-Verbose "[$($_.FullName)]"
         . $_.FullName
     }
 }
 
-LogGroup 'Loading inputs' {
+Set-GitHubLogGroup 'Loading inputs' {
     $name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
         $env:GITHUB_REPOSITORY_NAME
     } else {
