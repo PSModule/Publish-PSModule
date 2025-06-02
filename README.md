@@ -60,10 +60,6 @@ The action can be configured using the following settings:
 | `PatchLabels` | A comma separated list of labels that trigger a patch release. | `false` | `patch, fix` |
 | `IgnoreLabels` | A comma separated list of labels that do not trigger a release. | `false` | `NoRelease` |
 | `WhatIf` | Control wether to simulate the action. If enabled, the action will not create any releases. Used for testing. | `false` | `false` |
-| `Debug` | Enable debug output. | `'false'` | `false` |
-| `Verbose` | Enable verbose output. | `'false'` | `false` |
-| `Version` | Specifies the version of the GitHub module to be installed. The value must be an exact version. | | `false` |
-| `Prerelease` | Allow prerelease versions if available. | `'false'` | `false` |
 | `WorkingDirectory` | The working directory where the script runs. | `'false'`    | `'.'` |
 
 ## Example

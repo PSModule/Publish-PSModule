@@ -25,6 +25,8 @@ Set-GitHubLogGroup "Loading helper scripts from [$path]" {
     }
 }
 
+$env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
+
 Set-GitHubLogGroup 'Loading inputs' {
     $name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
         $env:GITHUB_REPOSITORY_NAME
