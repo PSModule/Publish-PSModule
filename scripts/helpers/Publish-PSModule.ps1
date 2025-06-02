@@ -1,13 +1,13 @@
 ﻿function Publish-PSModule {
     <#
-    .SYNOPSIS
-    Publishes a module to the PowerShell Gallery.
+        .SYNOPSIS
+        Publishes a module to the PowerShell Gallery and creates a GitHub Release.
 
-    .DESCRIPTION
-    Publishes a module to the PowerShell Gallery.
+        .DESCRIPTION
+        Publishes a module to the PowerShell Gallery and creates a GitHub Release.
 
-    .EXAMPLE
-    Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
+        .EXAMPLE
+        Publish-PSModule -Name 'PSModule.FX' -APIKey $env:PSGALLERY_API_KEY
     #>
     [OutputType([void])]
     [CmdletBinding()]
@@ -18,6 +18,10 @@
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSUseDeclaredVarsMoreThanAssignments', '',
         Justification = 'LogGroup - Scoping affects the variables line of sight.'
+    )]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSAvoidUsingWriteHost', '',
+        Justification = 'Log outputs to GitHub Actions logs.'
     )]
     param(
         # Name of the module to process.
