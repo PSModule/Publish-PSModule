@@ -343,7 +343,7 @@
                     " PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
                 )
             } else {
-                Write-GitHubNotice "Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
+                Write-Host "::notice::Module [$Name - $publishPSVersion] published to the PowerShell Gallery."
                 gh pr comment $pull_request.number -b "Module [$Name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
                 if ($LASTEXITCODE -ne 0) {
                     Write-Error 'Failed to comment on the pull request.'
@@ -384,7 +384,7 @@
                     exit $LASTEXITCODE
                 }
             }
-            Write-GitHubNotice "Release created: [$newVersion]"
+            Write-Host "::notice::Release created: [$newVersion]"
         }
     }
 
