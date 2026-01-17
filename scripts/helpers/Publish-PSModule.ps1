@@ -376,8 +376,15 @@
                 $releaseCreateCommand += @('--title', $newVersion.ToString())
             }
 
-            # Add notes parameter - use temp file to avoid escaping issues with special characters
+            # Build release notes content. Uses temp file to avoid escaping issues with special characters.
+            # Precedence rules for the three UsePR* parameters:
+            #   1. UsePRTitleAsNotesHeading + UsePRBodyAsReleaseNotes: Creates "# Title (#PR)\n\nBody" format.
+            #      Requires both parameters enabled AND both PR title and body to be present.
+            #   2. UsePRBodyAsReleaseNotes only: Uses PR body as-is for release notes.
+            #      Takes effect when heading option is disabled/missing title, but body is available.
+            #   3. Fallback: Auto-generates notes via GitHub's --generate-notes when no PR content is used.
             if ($usePRTitleAsNotesHeading -and $usePRBodyAsReleaseNotes -and $pull_request.title -and $pull_request.body) {
+                # Path 1: Full PR-based notes with title as H1 heading and PR number link
                 $prTitle = $pull_request.title
                 $prNumber = $pull_request.number
                 $prBody = $pull_request.body
@@ -387,12 +394,14 @@
                 $releaseCreateCommand += @('--notes-file', $notesFilePath)
                 Write-Output 'Using PR title as H1 heading with link and body as release notes'
             } elseif ($usePRBodyAsReleaseNotes -and $pull_request.body) {
+                # Path 2: PR body only - no heading, just the body content
                 $prBody = $pull_request.body
                 $notesFilePath = [System.IO.Path]::GetTempFileName()
                 Set-Content -Path $notesFilePath -Value $prBody -Encoding utf8
                 $releaseCreateCommand += @('--notes-file', $notesFilePath)
                 Write-Output 'Using PR body as release notes'
             } else {
+                # Path 3: Fallback to GitHub's auto-generated release notes
                 $releaseCreateCommand += @('--generate-notes')
             }
 
