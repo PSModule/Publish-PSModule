@@ -365,6 +365,7 @@
         Set-GitHubLogGroup 'New-GitHubRelease' {
             Write-Output 'Create new GitHub release'
             $releaseCreateCommand = @('release', 'create', $newVersion.ToString())
+            $notesFilePath = $null
 
             # Add title parameter
             if ($usePRTitleAsReleaseName -and $pull_request.title) {
@@ -375,17 +376,21 @@
                 $releaseCreateCommand += @('--title', $newVersion.ToString())
             }
 
-            # Add notes parameter
+            # Add notes parameter - use temp file to avoid escaping issues with special characters
             if ($usePRTitleAsNotesHeading -and $usePRBodyAsReleaseNotes -and $pull_request.title -and $pull_request.body) {
                 $prTitle = $pull_request.title
                 $prNumber = $pull_request.number
                 $prBody = $pull_request.body
                 $notes = "# $prTitle (#$prNumber)`n`n$prBody"
-                $releaseCreateCommand += @('--notes', $notes)
+                $notesFilePath = [System.IO.Path]::GetTempFileName()
+                Set-Content -Path $notesFilePath -Value $notes -Encoding utf8
+                $releaseCreateCommand += @('--notes-file', $notesFilePath)
                 Write-Output 'Using PR title as H1 heading with link and body as release notes'
             } elseif ($usePRBodyAsReleaseNotes -and $pull_request.body) {
                 $prBody = $pull_request.body
-                $releaseCreateCommand += @('--notes', $prBody)
+                $notesFilePath = [System.IO.Path]::GetTempFileName()
+                Set-Content -Path $notesFilePath -Value $prBody -Encoding utf8
+                $releaseCreateCommand += @('--notes-file', $notesFilePath)
                 Write-Output 'Using PR body as release notes'
             } else {
                 $releaseCreateCommand += @('--generate-notes')
@@ -405,6 +410,12 @@
                     exit $LASTEXITCODE
                 }
             }
+
+            # Clean up temporary notes file if created
+            if ($notesFilePath -and (Test-Path -Path $notesFilePath)) {
+                Remove-Item -Path $notesFilePath -Force
+            }
+
             if ($whatIf) {
                 Write-Output 'WhatIf: gh pr comment $pull_request.number -b "The release [$newVersion] has been created."'
             } else {
