@@ -25,7 +25,6 @@ jobs:
           persist-credentials: false
 
       - name: Lint code base
-        # zizmor: ignore[unpinned-uses] not our action
         uses: super-linter/super-linter@latest
         env:
           GITHUB_TOKEN: ${{ github.token }}
