@@ -66,7 +66,7 @@ inputs:
     required: false
     default: 'true'
   UsePRTitleAsNotesHeading:
-    description: When enabled, the release notes will begin with the pull request title as a H1 heading followed by the pull request body. The title will reference the pull request number.
+    description: When enabled along with UsePRBodyAsReleaseNotes, the release notes will begin with the pull request title as a H1 heading followed by the pull request body. The title will reference the pull request number.
     required: false
     default: 'true'
 
