@@ -2,6 +2,7 @@ name: Auto-Release
 
 run-name: "Auto-Release - [${{ github.event.pull_request.title }} #${{ github.event.pull_request.number }}] by @${{ github.actor }}"
 
+# zizmor: ignore[dangerous-triggers] intentional - Auto-Release needs write access to create releases on PR merge
 on:
   pull_request_target:
     branches:
@@ -27,8 +28,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Auto-Release
+        # zizmor: ignore[unpinned-uses] not our action
         uses: PSModule/Auto-Release@v1
         with:
           IncrementalPrerelease: false

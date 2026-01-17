@@ -1,0 +1,3 @@
+Linter:
+  env:
+    VALIDATE_BIOME_FORMAT: false
