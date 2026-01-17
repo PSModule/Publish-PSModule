@@ -48,18 +48,24 @@
         $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
         $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
         $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
+        $usePRBodyAsReleaseNotes = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes -eq 'true'
+        $usePRTitleAsReleaseName = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName -eq 'true'
+        $usePRTitleAsNotesHeading = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading -eq 'true'
 
         [pscustomobject]@{
-            AutoCleanup           = $autoCleanup
-            AutoPatching          = $autoPatching
-            IncrementalPrerelease = $incrementalPrerelease
-            DatePrereleaseFormat  = $datePrereleaseFormat
-            VersionPrefix         = $versionPrefix
-            WhatIf                = $whatIf
-            IgnoreLabels          = $ignoreLabels
-            MajorLabels           = $majorLabels
-            MinorLabels           = $minorLabels
-            PatchLabels           = $patchLabels
+            AutoCleanup              = $autoCleanup
+            AutoPatching             = $autoPatching
+            IncrementalPrerelease    = $incrementalPrerelease
+            DatePrereleaseFormat     = $datePrereleaseFormat
+            VersionPrefix            = $versionPrefix
+            WhatIf                   = $whatIf
+            IgnoreLabels             = $ignoreLabels
+            MajorLabels              = $majorLabels
+            MinorLabels              = $minorLabels
+            PatchLabels              = $patchLabels
+            UsePRBodyAsReleaseNotes  = $usePRBodyAsReleaseNotes
+            UsePRTitleAsReleaseName  = $usePRTitleAsReleaseName
+            UsePRTitleAsNotesHeading = $usePRTitleAsNotesHeading
         } | Format-List | Out-String
     }
 
@@ -76,7 +82,7 @@
 
     Set-GitHubLogGroup 'Event information - Details' {
         $defaultBranchName = (gh repo view --json defaultBranchRef | ConvertFrom-Json | Select-Object -ExpandProperty defaultBranchRef).name
-        $isPullRequest = $githubEvent.PSObject.Properties.Name -Contains 'pull_request'
+        $isPullRequest = $githubEvent.PSObject.Properties.Name -contains 'pull_request'
         if (-not ($isPullRequest -or $whatIf)) {
             Write-Warning '⚠️ A release should not be created in this context. Exiting.'
             exit
@@ -113,7 +119,7 @@
     Set-GitHubLogGroup 'Calculate release type' {
         $createRelease = $isMerged -and $targetIsDefaultBranch
         $closedPullRequest = $prIsClosed -and -not $isMerged
-        $createPrerelease = $labels -Contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
+        $createPrerelease = $labels -contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
         $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
@@ -358,27 +364,67 @@
 
         Set-GitHubLogGroup 'New-GitHubRelease' {
             Write-Output 'Create new GitHub release'
-            if ($createPrerelease) {
-                if ($whatIf) {
-                    Write-Output "WhatIf: gh release create $newVersion --title $newVersion --target $prHeadRef --generate-notes --prerelease"
-                } else {
-                    $releaseURL = gh release create $newVersion --title $newVersion --target $prHeadRef --generate-notes --prerelease
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Failed to create the release [$newVersion]."
-                        exit $LASTEXITCODE
-                    }
-                }
+            $releaseCreateCommand = @('release', 'create', $newVersion.ToString())
+            $notesFilePath = $null
+
+            # Add title parameter
+            if ($usePRTitleAsReleaseName -and $pull_request.title) {
+                $prTitle = $pull_request.title
+                $releaseCreateCommand += @('--title', $prTitle)
+                Write-Output "Using PR title as release name: [$prTitle]"
             } else {
-                if ($whatIf) {
-                    Write-Output "WhatIf: gh release create $newVersion --title $newVersion --generate-notes"
-                } else {
-                    $releaseURL = gh release create $newVersion --title $newVersion --generate-notes
-                    if ($LASTEXITCODE -ne 0) {
-                        Write-Error "Failed to create the release [$newVersion]."
-                        exit $LASTEXITCODE
-                    }
+                $releaseCreateCommand += @('--title', $newVersion.ToString())
+            }
+
+            # Build release notes content. Uses temp file to avoid escaping issues with special characters.
+            # Precedence rules for the three UsePR* parameters:
+            #   1. UsePRTitleAsNotesHeading + UsePRBodyAsReleaseNotes: Creates "# Title (#PR)\n\nBody" format.
+            #      Requires both parameters enabled AND both PR title and body to be present.
+            #   2. UsePRBodyAsReleaseNotes only: Uses PR body as-is for release notes.
+            #      Takes effect when heading option is disabled/missing title, but body is available.
+            #   3. Fallback: Auto-generates notes via GitHub's --generate-notes when no PR content is used.
+            if ($usePRTitleAsNotesHeading -and $usePRBodyAsReleaseNotes -and $pull_request.title -and $pull_request.body) {
+                # Path 1: Full PR-based notes with title as H1 heading and PR number link
+                $prTitle = $pull_request.title
+                $prNumber = $pull_request.number
+                $prBody = $pull_request.body
+                $notes = "# $prTitle (#$prNumber)`n`n$prBody"
+                $notesFilePath = [System.IO.Path]::GetTempFileName()
+                Set-Content -Path $notesFilePath -Value $notes -Encoding utf8
+                $releaseCreateCommand += @('--notes-file', $notesFilePath)
+                Write-Output 'Using PR title as H1 heading with link and body as release notes'
+            } elseif ($usePRBodyAsReleaseNotes -and $pull_request.body) {
+                # Path 2: PR body only - no heading, just the body content
+                $prBody = $pull_request.body
+                $notesFilePath = [System.IO.Path]::GetTempFileName()
+                Set-Content -Path $notesFilePath -Value $prBody -Encoding utf8
+                $releaseCreateCommand += @('--notes-file', $notesFilePath)
+                Write-Output 'Using PR body as release notes'
+            } else {
+                # Path 3: Fallback to GitHub's auto-generated release notes
+                $releaseCreateCommand += @('--generate-notes')
+            }
+
+            # Add remaining parameters
+            if ($createPrerelease) {
+                $releaseCreateCommand += @('--target', $prHeadRef, '--prerelease')
+            }
+
+            if ($whatIf) {
+                Write-Output "WhatIf: gh $($releaseCreateCommand -join ' ')"
+            } else {
+                $releaseURL = gh @releaseCreateCommand
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "Failed to create the release [$newVersion]."
+                    exit $LASTEXITCODE
                 }
             }
+
+            # Clean up temporary notes file if created
+            if ($notesFilePath -and (Test-Path -Path $notesFilePath)) {
+                Remove-Item -Path $notesFilePath -Force
+            }
+
             if ($whatIf) {
                 Write-Output 'WhatIf: gh pr comment $pull_request.number -b "The release [$newVersion] has been created."'
             } else {
