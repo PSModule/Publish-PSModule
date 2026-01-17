@@ -11,8 +11,6 @@ updates:
       - dependencies
       - github-actions
     schedule:
-      interval: weekly
-    groups:
-      github-actions:
-        patterns:
-          - '*'
+      interval: daily
+    cooldown:
+      default-days: 7
