@@ -1,8 +1,4 @@
 rules:
-  dangerous-triggers:
-    ignore:
-      # Auto-Release needs write access to create releases on PR merge
-      - Auto-Release.yml
   unpinned-uses:
     ignore:
       # External actions - not pinned by design
