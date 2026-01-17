@@ -388,7 +388,7 @@
                 $releaseCreateCommand += @('--notes', $prBody)
                 Write-Output 'Using PR body as release notes'
             } else {
-                $releaseCreateCommand += '--generate-notes'
+                $releaseCreateCommand += @('--generate-notes')
             }
 
             # Add remaining parameters
