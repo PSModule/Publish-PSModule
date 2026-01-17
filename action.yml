@@ -1,9 +1,6 @@
-name: Publish-PSModule (by PSModule)
+name: Publish-PSModule
 description: Publish a PowerShell module to the PowerShell Gallery.
 author: PSModule
-branding:
-  icon: upload-cloud
-  color: gray-dark
 
 inputs:
   Name:
@@ -56,21 +53,6 @@ inputs:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
     default: 'false'
-  Debug:
-    description: Enable debug output.
-    required: false
-    default: 'false'
-  Verbose:
-    description: Enable verbose output.
-    required: false
-    default: 'false'
-  Version:
-    description: Specifies the version of the GitHub module to be installed. The value must be an exact version.
-    required: false
-  Prerelease:
-    description: Allow prerelease versions if available.
-    required: false
-    default: 'false'
   WorkingDirectory:
     description: The working directory where the script will run from.
     required: false
@@ -95,7 +77,8 @@ runs:
       uses: PSModule/Install-PSModuleHelpers@v1
 
     - name: Run Publish-PSModule
-      uses: PSModule/GitHub-Script@v1
+      shell: pwsh
+      working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath: ${{ inputs.ModulePath }}
@@ -110,15 +93,7 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_WorkingDirectory: ${{ inputs.WorkingDirectory }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes: ${{ inputs.UsePRBodyAsReleaseNotes }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName: ${{ inputs.UsePRTitleAsReleaseName }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading: ${{ inputs.UsePRTitleAsNotesHeading }}
-      with:
-        Name: Publish-PSModule
-        Debug: ${{ inputs.Debug }}
-        Prerelease: ${{ inputs.Prerelease }}
-        Verbose: ${{ inputs.Verbose }}
-        Version: ${{ inputs.Version }}
-        WorkingDirectory: ${{ inputs.WorkingDirectory }}
-        Script: ${{ github.action_path }}/scripts/main.ps1
+      run: ${{ github.action_path }}/scripts/main.ps1

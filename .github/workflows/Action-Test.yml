@@ -22,18 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Initialize environment
-        uses: PSModule/Initialize-PSModule@main
+        uses: actions/checkout@v6
 
       - name: Action-Test
         uses: ./
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          Verbose: true
-          Debug: true
           Name: PSModuleTest
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }}
