@@ -82,7 +82,7 @@
 
     Set-GitHubLogGroup 'Event information - Details' {
         $defaultBranchName = (gh repo view --json defaultBranchRef | ConvertFrom-Json | Select-Object -ExpandProperty defaultBranchRef).name
-        $isPullRequest = $githubEvent.PSObject.Properties.Name -Contains 'pull_request'
+        $isPullRequest = $githubEvent.PSObject.Properties.Name -contains 'pull_request'
         if (-not ($isPullRequest -or $whatIf)) {
             Write-Warning '⚠️ A release should not be created in this context. Exiting.'
             exit
@@ -119,7 +119,7 @@
     Set-GitHubLogGroup 'Calculate release type' {
         $createRelease = $isMerged -and $targetIsDefaultBranch
         $closedPullRequest = $prIsClosed -and -not $isMerged
-        $createPrerelease = $labels -Contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
+        $createPrerelease = $labels -contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
         $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
@@ -376,7 +376,7 @@
             }
 
             # Add notes parameter
-            if ($usePRTitleAsNotesHeading -and $pull_request.title -and $pull_request.body) {
+            if ($usePRTitleAsNotesHeading -and $usePRBodyAsReleaseNotes -and $pull_request.title -and $pull_request.body) {
                 $prTitle = $pull_request.title
                 $prNumber = $pull_request.number
                 $prBody = $pull_request.body
