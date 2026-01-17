@@ -74,8 +74,7 @@ runs:
   using: composite
   steps:
     - name: Install-PSModuleHelpers
-      # zizmor: ignore[unpinned-uses] not our action
-      uses: PSModule/Install-PSModuleHelpers@v1
+      uses: PSModule/Install-PSModuleHelpers@d60d63e4be477d1ca0c67c6085101fb109bce8f1 # v1.0.6
 
     - name: Run Publish-PSModule
       shell: pwsh

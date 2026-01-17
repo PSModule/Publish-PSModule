@@ -1,6 +1,0 @@
-rules:
-  unpinned-uses:
-    ignore:
-      # External actions - not pinned by design
-      - Auto-Release.yml
-      - Linter.yml
