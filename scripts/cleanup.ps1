@@ -7,7 +7,7 @@ $prereleaseTagsToCleanup = $env:PUBLISH_CONTEXT_PrereleaseTagsToCleanup
 $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
 
 if ([string]::IsNullOrWhiteSpace($prereleaseName)) {
-    Write-Error 'PUBLISH_CONTEXT_PrereleaseName is not set. Run main.ps1 first.'
+    Write-Error 'PUBLISH_CONTEXT_PrereleaseName is not set. Run init.ps1 first.'
     exit 1
 }
 #endregion Load context from environment
