@@ -80,6 +80,11 @@ runs:
     - name: Install-PSModuleHelpers
       uses: PSModule/Install-PSModuleHelpers@d60d63e4be477d1ca0c67c6085101fb109bce8f1 # v1.0.6
 
+    - name: Update Microsoft.PowerShell.PSResourceGet
+      shell: pwsh
+      run: |
+        Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -TrustRepository
+
     - name: Initialize Publish Context
       id: init
       shell: pwsh
@@ -101,7 +106,7 @@ runs:
 
     - name: Download module artifact
       if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       with:
         name: module
         path: ${{ inputs.ModulePath }}
