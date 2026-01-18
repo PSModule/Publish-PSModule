@@ -111,8 +111,8 @@ Set-GitHubLogGroup 'Publish-ToPSGallery' {
     }
     if ($whatIf) {
         Write-Output (
-            "gh pr comment $prNumber -b 'Published to the" +
-            " PowerShell Gallery [$publishPSVersion]($psGalleryReleaseLink) has been created.'"
+            "gh pr comment $prNumber -b " +
+            "'Module [$name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery.'"
         )
     } else {
         Write-Host "::notice::Module [$name - $publishPSVersion] published to the PowerShell Gallery."
@@ -189,7 +189,10 @@ Set-GitHubLogGroup 'New-GitHubRelease' {
     }
 
     if ($whatIf) {
-        Write-Output 'WhatIf: gh pr comment $prNumber -b "The release [$newVersion] has been created."'
+        Write-Output (
+            "gh pr comment $prNumber -b " +
+            "'GitHub release for $name $newVersion has been created.'"
+        )
     } else {
         gh pr comment $prNumber -b "GitHub release for $name [$newVersion]($releaseURL) has been created."
         if ($LASTEXITCODE -ne 0) {
