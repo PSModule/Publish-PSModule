@@ -87,6 +87,9 @@
     }
 
     Set-GitHubLogGroup 'Event information - Details' {
+        if (-not $pull_request) {
+            throw 'GitHub event does not contain pull_request data. This script must be run from a pull_request event.'
+        }
         $prHeadRef = $pull_request.head.ref
 
         Write-Output '-------------------------------------------------'
