@@ -13,10 +13,10 @@ inputs:
   APIKey:
     description: PowerShell Gallery API Key.
     required: true
-  CleanupPrereleases:
-    description: When enabled, only performs cleanup of old prerelease tags without creating a new release or publishing to PSGallery.
+  AutoCleanup:
+    description: Control wether to automatically delete the prerelease tags after the stable release is created.
     required: false
-    default: 'false'
+    default: 'true'
   AutoPatching:
     description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
     required: false
@@ -50,7 +50,7 @@ inputs:
     required: false
     default: NoRelease
   ReleaseType:
-    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', or 'None'. Cleanup is handled separately via CleanupPrereleases.
+    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', or 'None'.
     required: false
     default: Release
   WhatIf:
@@ -91,7 +91,7 @@ runs:
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_CleanupPrereleases: ${{ inputs.CleanupPrereleases }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}

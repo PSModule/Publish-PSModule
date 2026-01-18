@@ -32,7 +32,7 @@ Write-Output "Module name: [$name]"
 
 #region Set configuration
 Set-GitHubLogGroup 'Set configuration' {
-    $cleanupPrereleases = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_CleanupPrereleases -eq 'true'
+    $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
     $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
     $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
     $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
@@ -51,7 +51,7 @@ Set-GitHubLogGroup 'Set configuration' {
     }
 
     [pscustomobject]@{
-        CleanupPrereleases    = $cleanupPrereleases
+        AutoCleanup           = $autoCleanup
         AutoPatching          = $autoPatching
         IncrementalPrerelease = $incrementalPrerelease
         DatePrereleaseFormat  = $datePrereleaseFormat
@@ -141,7 +141,7 @@ Set-GitHubLogGroup 'Calculate release type' {
 
     Write-Output '-------------------------------------------------'
     Write-Output "ReleaseType:                    [$releaseType]"
-    Write-Output "CleanupPrereleases:             [$cleanupPrereleases]"
+    Write-Output "AutoCleanup:                    [$autoCleanup]"
     Write-Output "Should publish:                 [$shouldPublish]"
     Write-Output "Create a release:               [$createRelease]"
     Write-Output "Create a prerelease:            [$createPrerelease]"
@@ -314,7 +314,7 @@ Set-GitHubLogGroup 'Find prereleases to cleanup' {
 Set-GitHubLogGroup 'Store context in environment variables' {
     # Store values for subsequent steps by appending to GITHUB_ENV
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_ShouldPublish=$($shouldPublish.ToString().ToLower())"
-    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_ShouldCleanup=$($cleanupPrereleases.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_ShouldCleanup=$($autoCleanup.ToString().ToLower())"
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_CreateRelease=$($createRelease.ToString().ToLower())"
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_CreatePrerelease=$($createPrerelease.ToString().ToLower())"
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_MajorRelease=$($majorRelease.ToString().ToLower())"
@@ -330,7 +330,7 @@ Set-GitHubLogGroup 'Store context in environment variables' {
     Write-Output 'Stored environment variables:'
     [PSCustomObject]@{
         ShouldPublish           = $shouldPublish
-        ShouldCleanup           = $cleanupPrereleases
+        ShouldCleanup           = $autoCleanup
         CreateRelease           = $createRelease
         CreatePrerelease        = $createPrerelease
         MajorRelease            = $majorRelease
@@ -346,4 +346,4 @@ Set-GitHubLogGroup 'Store context in environment variables' {
 }
 #endregion Store context in environment variables
 
-Write-Output "Context initialization complete. ShouldPublish=[$shouldPublish], ShouldCleanup=[$cleanupPrereleases]"
+Write-Output "Context initialization complete. ShouldPublish=[$shouldPublish], ShouldCleanup=[$autoCleanup]"
