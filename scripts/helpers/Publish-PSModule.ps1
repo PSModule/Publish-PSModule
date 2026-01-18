@@ -38,14 +38,14 @@
     )
 
     Set-GitHubLogGroup 'Set configuration' {
-        $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
+        $cleanupPrereleases = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_CleanupPrereleases -eq 'true'
         $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
         $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
         $datePrereleaseFormat = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat
         $versionPrefix = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
         $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
         $ignoreLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels -split ',' | ForEach-Object { $_.Trim() }
-        $releaseType = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType  # 'Release', 'Prerelease', 'Cleanup', or 'None'
+        $releaseType = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType  # 'Release', 'Prerelease', or 'None'
         $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
         $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
         $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
@@ -60,7 +60,7 @@
         }
 
         [pscustomobject]@{
-            AutoCleanup              = $autoCleanup
+            CleanupPrereleases       = $cleanupPrereleases
             AutoPatching             = $autoPatching
             IncrementalPrerelease    = $incrementalPrerelease
             DatePrereleaseFormat     = $datePrereleaseFormat
@@ -114,7 +114,7 @@
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
         # Validate ReleaseType - fail if not provided or invalid to catch configuration errors
-        $validReleaseTypes = @('Release', 'Prerelease', 'Cleanup', 'None')
+        $validReleaseTypes = @('Release', 'Prerelease', 'None')
         if ([string]::IsNullOrWhiteSpace($releaseType)) {
             Write-Error "ReleaseType input is required. Valid values are: $($validReleaseTypes -join ', ')"
             exit 1
@@ -126,10 +126,13 @@
 
         $createRelease = $releaseType -eq 'Release'
         $createPrerelease = $releaseType -eq 'Prerelease'
-        $isCleanupMode = $releaseType -eq 'Cleanup'
 
-        if ($releaseType -eq 'None') {
-            Write-Output 'ReleaseType is None. Skipping release creation.'
+        # Note: cleanupPrereleases is pre-calculated by Get-PSModuleSettings based on:
+        # - The release situation (Release or Abandoned PR)
+        # - The user's CleanupPrereleases preference
+
+        if ($releaseType -eq 'None' -and -not $cleanupPrereleases) {
+            Write-Output 'ReleaseType is None and no cleanup needed. Skipping.'
             return
         }
 
@@ -147,12 +150,12 @@
 
         Write-Output '-------------------------------------------------'
         Write-Output "ReleaseType:                    [$releaseType]"
+        Write-Output "CleanupPrereleases:             [$cleanupPrereleases]"
         Write-Output "Create a release:               [$createRelease]"
         Write-Output "Create a prerelease:            [$createPrerelease]"
         Write-Output "Create a major release:         [$majorRelease]"
         Write-Output "Create a minor release:         [$minorRelease]"
         Write-Output "Create a patch release:         [$patchRelease]"
-        Write-Output "ReleaseType is Cleanup:         [$isCleanupMode]"
         Write-Output '-------------------------------------------------'
     }
 
@@ -455,7 +458,7 @@
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
     }
 
-    if ((($isCleanupMode -or $createRelease) -and $autoCleanup) -or $whatIf) {
+    if ($cleanupPrereleases -or $whatIf) {
         Set-GitHubLogGroup "Cleanup prereleases for [$prereleaseName]" {
             foreach ($rel in $prereleasesToCleanup) {
                 $relTagName = $rel.tagName
