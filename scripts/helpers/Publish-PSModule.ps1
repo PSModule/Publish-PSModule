@@ -54,7 +54,9 @@
         $usePRTitleAsNotesHeading = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading -eq 'true'
 
         if ($whatIf) {
-            Write-Host '::warning::WhatIf mode is enabled. No actual releases will be created, no modules will be published, and no tags will be deleted.'
+            $message = 'WhatIf mode is enabled. No actual releases will be created, ' +
+            'no modules will be published, and no tags will be deleted.'
+            Write-Host "::warning::$message"
         }
 
         [pscustomobject]@{
