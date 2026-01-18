@@ -1,6 +1,8 @@
 ﻿[CmdletBinding()]
 param()
 
+Import-Module -Name 'Helpers' -Force
+
 $prereleaseName = $env:PUBLISH_CONTEXT_PrereleaseName
 $prereleaseTagsToCleanup = $env:PUBLISH_CONTEXT_PrereleaseTagsToCleanup
 $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'

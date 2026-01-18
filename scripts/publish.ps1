@@ -1,23 +1,24 @@
 ﻿[CmdletBinding()]
 param()
 
-#region Load inputs
-$env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
+Import-Module -Name 'Helpers' -Force
 
-$name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
-    $env:GITHUB_REPOSITORY_NAME
-} else {
-    $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
+LogGroup 'Load inputs' {
+    $env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
+
+    $name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
+        $env:GITHUB_REPOSITORY_NAME
+    } else {
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
+    }
+    $modulePath = Resolve-Path -Path "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name" | Select-Object -ExpandProperty Path
+    $apiKey = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
+
+    Write-Output "Module name: [$name]"
+    Write-Output "Module path: [$modulePath]"
 }
-$modulePath = Resolve-Path -Path "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name" | Select-Object -ExpandProperty Path
-$apiKey = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
 
-Write-Output "Module name: [$name]"
-Write-Output "Module path: [$modulePath]"
-#endregion Load inputs
-
-#region Load publish context from environment
-Set-GitHubLogGroup 'Load publish context from environment' {
+LogGroup 'Load publish context from environment' {
     $createRelease = $env:PUBLISH_CONTEXT_CreateRelease -eq 'true'
     $createPrerelease = $env:PUBLISH_CONTEXT_CreatePrerelease -eq 'true'
     $newVersionString = $env:PUBLISH_CONTEXT_NewVersion
@@ -45,10 +46,8 @@ Set-GitHubLogGroup 'Load publish context from environment' {
     Write-Output "  WhatIf:              [$whatIf]"
     Write-Output '-------------------------------------------------'
 }
-#endregion Load publish context from environment
 
-#region Load PR information
-Set-GitHubLogGroup 'Load PR information' {
+LogGroup 'Load PR information' {
     $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
@@ -56,10 +55,8 @@ Set-GitHubLogGroup 'Load PR information' {
         throw 'GitHub event does not contain pull_request data. This script must be run from a pull_request event.'
     }
 }
-#endregion Load PR information
 
-#region Validate manifest and set module path
-Set-GitHubLogGroup 'Validate manifest and set module path' {
+LogGroup 'Validate manifest and set module path' {
     Add-PSModulePath -Path (Split-Path -Path $modulePath -Parent)
     $manifestFilePath = Join-Path $modulePath "$name.psd1"
     Write-Output "Module manifest file path: [$manifestFilePath]"
@@ -68,10 +65,8 @@ Set-GitHubLogGroup 'Validate manifest and set module path' {
         exit 1
     }
 }
-#endregion Validate manifest and set module path
 
-#region Update module manifest
-Set-GitHubLogGroup 'Update module manifest' {
+LogGroup 'Update module manifest' {
     Write-Output 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
     Set-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
@@ -82,16 +77,12 @@ Set-GitHubLogGroup 'Update module manifest' {
 
     Show-FileContent -Path $manifestFilePath
 }
-#endregion Update module manifest
 
-#region Install module dependencies
-Set-GitHubLogGroup 'Install module dependencies' {
+LogGroup 'Install module dependencies' {
     Resolve-PSModuleDependency -ManifestFilePath $manifestFilePath
 }
-#endregion Install module dependencies
 
-#region Publish to PSGallery
-Set-GitHubLogGroup 'Publish-ToPSGallery' {
+LogGroup 'Publish-ToPSGallery' {
     if ($createPrerelease) {
         $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
     } else {
@@ -123,10 +114,8 @@ Set-GitHubLogGroup 'Publish-ToPSGallery' {
         }
     }
 }
-#endregion Publish to PSGallery
 
-#region Create GitHub Release
-Set-GitHubLogGroup 'New-GitHubRelease' {
+LogGroup 'New-GitHubRelease' {
     Write-Output 'Create new GitHub release'
     $releaseCreateCommand = @('release', 'create', $newVersion.ToString())
     $notesFilePath = $null
@@ -202,6 +191,5 @@ Set-GitHubLogGroup 'New-GitHubRelease' {
     }
     Write-Host "::notice::Release created: [$newVersion]"
 }
-#endregion Create GitHub Release
 
 Write-Output "Publishing complete. Version: [$($newVersion.ToString())]"

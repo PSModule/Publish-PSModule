@@ -1,6 +1,8 @@
 ﻿[CmdletBinding()]
 param()
 
+Import-Module -Name 'Helpers' -Force
+
 LogGroup 'Install dependencies' {
     $retryCount = 5
     $retryDelay = 10
