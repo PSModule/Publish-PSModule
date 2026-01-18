@@ -14,11 +14,11 @@ inputs:
     description: PowerShell Gallery API Key.
     required: true
   AutoCleanup:
-    description: Control wether to automatically delete the prerelease tags after the stable release is created.
+    description: Control whether to automatically delete the prerelease tags after the stable release is created.
     required: false
     default: 'true'
   AutoPatching:
-    description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
+    description: Control whether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
     required: false
     default: 'true'
   IncrementalPrerelease:
