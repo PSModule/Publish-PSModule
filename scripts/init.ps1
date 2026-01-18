@@ -99,12 +99,12 @@ LogGroup 'Pull request - Labels' {
     $labels | Format-List | Out-String
 }
 
-LogGroup 'Calculate release type' {
+LogGroup 'Determine release configuration' {
     $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
-    # Validate ReleaseType - defensive check for invalid values.
-    # Note: The empty check below should never trigger since action.yml provides a default of 'Release',
-    # but is included for defensive programming in case the script is called directly or defaults change.
+    # Validate ReleaseType input from Get-PSModuleSettings.
+    # The ReleaseType is pre-calculated based on PR state and labels by the settings action,
+    # so we trust it here rather than recalculating from labels.
     $validReleaseTypes = @('Release', 'Prerelease', 'None')
     if ([string]::IsNullOrWhiteSpace($releaseType)) {
         Write-Error "ReleaseType input is required. Valid values are: $($validReleaseTypes -join ', ')"
@@ -119,13 +119,14 @@ LogGroup 'Calculate release type' {
     $createPrerelease = $releaseType -eq 'Prerelease'
     $shouldPublish = $createRelease -or $createPrerelease
 
+    # Check for ignore labels that override the release type
     $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
-    if ($ignoreRelease) {
+    if ($ignoreRelease -and $shouldPublish) {
         Write-Output 'Ignoring release creation due to ignore label.'
         $shouldPublish = $false
     }
 
-    # Only calculate version bumps if we intend to publish (ReleaseType is not 'None')
+    # Determine version bump type from labels (only when publishing)
     $majorRelease = $false
     $minorRelease = $false
     $patchRelease = $false
@@ -138,18 +139,13 @@ LogGroup 'Calculate release type' {
             ($labels | Where-Object { $patchLabels -contains $_ }
         ).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
-        # Check if any version bump applies
         $hasVersionBump = $majorRelease -or $minorRelease -or $patchRelease
         if (-not $hasVersionBump) {
             Write-Output 'No version bump label found and AutoPatching is disabled. Skipping publish.'
             $shouldPublish = $false
         }
-    } else {
-        if ($ignoreRelease) {
-            Write-Output 'Skipping version bump calculation due to ignore label.'
-        } else {
-            Write-Output "ReleaseType is [$releaseType]. Skipping version bump calculation."
-        }
+    } elseif (-not $ignoreRelease) {
+        Write-Output "ReleaseType is [$releaseType]. No publishing required."
     }
 
     Write-Output '-------------------------------------------------'
