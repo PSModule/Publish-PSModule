@@ -53,6 +53,10 @@
         $usePRTitleAsReleaseName = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName -eq 'true'
         $usePRTitleAsNotesHeading = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading -eq 'true'
 
+        if ($whatIf) {
+            Write-Host '::warning::WhatIf mode is enabled. No actual releases will be created, no modules will be published, and no tags will be deleted.'
+        }
+
         [pscustomobject]@{
             AutoCleanup              = $autoCleanup
             AutoPatching             = $autoPatching
