@@ -108,7 +108,7 @@
     Set-GitHubLogGroup 'Calculate release type' {
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
-        # Validate ReleaseType - must be provided by Get-PSModuleSettings
+        # Validate ReleaseType - fail if not provided or invalid to catch configuration errors
         $validReleaseTypes = @('Release', 'Prerelease', 'Cleanup', 'None')
         if ([string]::IsNullOrWhiteSpace($releaseType)) {
             Write-Error "ReleaseType input is required. Valid values are: $($validReleaseTypes -join ', ')"
@@ -121,7 +121,7 @@
 
         $createRelease = $releaseType -eq 'Release'
         $createPrerelease = $releaseType -eq 'Prerelease'
-        $closedPullRequest = $releaseType -eq 'Cleanup'
+        $isCleanupMode = $releaseType -eq 'Cleanup'
 
         if ($releaseType -eq 'None') {
             Write-Output 'ReleaseType is None. Skipping release creation.'
@@ -147,7 +147,7 @@
         Write-Output "Create a major release:         [$majorRelease]"
         Write-Output "Create a minor release:         [$minorRelease]"
         Write-Output "Create a patch release:         [$patchRelease]"
-        Write-Output "Cleanup prereleases:            [$closedPullRequest]"
+        Write-Output "ReleaseType is Cleanup:         [$isCleanupMode]"
         Write-Output '-------------------------------------------------'
     }
 
@@ -450,7 +450,7 @@
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
     }
 
-    if ((($closedPullRequest -or $createRelease) -and $autoCleanup) -or $whatIf) {
+    if ((($isCleanupMode -or $createRelease) -and $autoCleanup) -or $whatIf) {
         Set-GitHubLogGroup "Cleanup prereleases for [$prereleaseName]" {
             foreach ($rel in $prereleasesToCleanup) {
                 $relTagName = $rel.tagName
