@@ -29,7 +29,7 @@ Set-GitHubLogGroup 'Load publish context from environment' {
     $usePRTitleAsNotesHeading = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading -eq 'true'
 
     if ([string]::IsNullOrWhiteSpace($newVersionString)) {
-        Write-Error 'PUBLISH_CONTEXT_NewVersion is not set. Run main.ps1 first.'
+        Write-Error 'PUBLISH_CONTEXT_NewVersion is not set. Run init.ps1 first.'
         exit 1
     }
 
@@ -58,8 +58,8 @@ Set-GitHubLogGroup 'Load PR information' {
 }
 #endregion Load PR information
 
-#region Get manifest version
-Set-GitHubLogGroup 'Get latest version - Manifest' {
+#region Validate manifest and set module path
+Set-GitHubLogGroup 'Validate manifest and set module path' {
     Add-PSModulePath -Path (Split-Path -Path $modulePath -Parent)
     $manifestFilePath = Join-Path $modulePath "$name.psd1"
     Write-Output "Module manifest file path: [$manifestFilePath]"
@@ -67,20 +67,8 @@ Set-GitHubLogGroup 'Get latest version - Manifest' {
         Write-Error "Module manifest file not found at [$manifestFilePath]"
         exit 1
     }
-    try {
-        $manifestVersion = New-PSSemVer -Version (Test-ModuleManifest $manifestFilePath -Verbose:$false).Version
-    } catch {
-        if ([string]::IsNullOrEmpty($manifestVersion)) {
-            Write-Warning 'Could not find the module version in the manifest. Using ''0.0.0'' as the version.'
-            $manifestVersion = New-PSSemVer -Version '0.0.0'
-        }
-    }
-    Write-Output '-------------------------------------------------'
-    Write-Output 'Manifest version:'
-    Write-Output $manifestVersion.ToString()
-    Write-Output '-------------------------------------------------'
 }
-#endregion Get manifest version
+#endregion Validate manifest and set module path
 
 #region Update module manifest
 Set-GitHubLogGroup 'Update module manifest' {
