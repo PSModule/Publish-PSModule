@@ -89,9 +89,9 @@ LogGroup 'Publish-ToPSGallery' {
         $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
     }
     $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$name/$publishPSVersion"
-    Write-Output "Publish module to PowerShell Gallery using [$apiKey]"
+    Write-Output "Publish module to PowerShell Gallery using API key from environment."
     if ($whatIf) {
-        Write-Output "Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey $apiKey"
+        Write-Output "Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey ***"
     } else {
         try {
             Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey $apiKey
