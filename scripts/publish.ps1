@@ -106,7 +106,7 @@ Set-GitHubLogGroup 'Publish-ToPSGallery' {
             Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey $apiKey
         } catch {
             Write-Error $_.Exception.Message
-            exit $LASTEXITCODE
+            exit 1
         }
     }
     if ($whatIf) {
