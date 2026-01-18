@@ -312,34 +312,36 @@ Set-GitHubLogGroup 'Find prereleases to cleanup' {
 
 #region Store context in environment variables
 Set-GitHubLogGroup 'Store context in environment variables' {
-    # Store values for subsequent steps
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_ShouldPublish' -Value $shouldPublish.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_ShouldCleanup' -Value $cleanupPrereleases.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_CreateRelease' -Value $createRelease.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_CreatePrerelease' -Value $createPrerelease.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_MajorRelease' -Value $majorRelease.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_MinorRelease' -Value $minorRelease.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_PatchRelease' -Value $patchRelease.ToString().ToLower()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_NewVersion' -Value $newVersion.ToString()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_PrereleaseName' -Value $prereleaseName
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_PrereleaseTagsToCleanup' -Value $prereleaseTagsToCleanup
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_PRNumber' -Value $pull_request.number.ToString()
-    Set-GitHubEnvironmentVariable -Name 'PUBLISH_CONTEXT_PRHeadRef' -Value $prHeadRef
+    # Store values for subsequent steps by appending to GITHUB_ENV
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_ShouldPublish=$($shouldPublish.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_ShouldCleanup=$($cleanupPrereleases.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_CreateRelease=$($createRelease.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_CreatePrerelease=$($createPrerelease.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_MajorRelease=$($majorRelease.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_MinorRelease=$($minorRelease.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PatchRelease=$($patchRelease.ToString().ToLower())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_NewVersion=$($newVersion.ToString())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PrereleaseName=$prereleaseName"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PrereleaseTagsToCleanup=$prereleaseTagsToCleanup"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PRNumber=$($pull_request.number.ToString())"
+    Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PRHeadRef=$prHeadRef"
 
     Write-Output '-------------------------------------------------'
     Write-Output 'Stored environment variables:'
-    Write-Output "  PUBLISH_CONTEXT_ShouldPublish:            [$shouldPublish]"
-    Write-Output "  PUBLISH_CONTEXT_ShouldCleanup:            [$cleanupPrereleases]"
-    Write-Output "  PUBLISH_CONTEXT_CreateRelease:            [$createRelease]"
-    Write-Output "  PUBLISH_CONTEXT_CreatePrerelease:         [$createPrerelease]"
-    Write-Output "  PUBLISH_CONTEXT_MajorRelease:             [$majorRelease]"
-    Write-Output "  PUBLISH_CONTEXT_MinorRelease:             [$minorRelease]"
-    Write-Output "  PUBLISH_CONTEXT_PatchRelease:             [$patchRelease]"
-    Write-Output "  PUBLISH_CONTEXT_NewVersion:               [$($newVersion.ToString())]"
-    Write-Output "  PUBLISH_CONTEXT_PrereleaseName:           [$prereleaseName]"
-    Write-Output "  PUBLISH_CONTEXT_PrereleaseTagsToCleanup:  [$prereleaseTagsToCleanup]"
-    Write-Output "  PUBLISH_CONTEXT_PRNumber:                 [$($pull_request.number)]"
-    Write-Output "  PUBLISH_CONTEXT_PRHeadRef:                [$prHeadRef]"
+    [PSCustomObject]@{
+        ShouldPublish           = $shouldPublish
+        ShouldCleanup           = $cleanupPrereleases
+        CreateRelease           = $createRelease
+        CreatePrerelease        = $createPrerelease
+        MajorRelease            = $majorRelease
+        MinorRelease            = $minorRelease
+        PatchRelease            = $patchRelease
+        NewVersion              = $newVersion.ToString()
+        PrereleaseName          = $prereleaseName
+        PrereleaseTagsToCleanup = $prereleaseTagsToCleanup
+        PRNumber                = $pull_request.number
+        PRHeadRef               = $prHeadRef
+    } | Format-List | Out-String
     Write-Output '-------------------------------------------------'
 }
 #endregion Store context in environment variables
