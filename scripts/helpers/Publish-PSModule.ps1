@@ -45,6 +45,7 @@
         $versionPrefix = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix
         $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
         $ignoreLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels -split ',' | ForEach-Object { $_.Trim() }
+        $releaseType = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType  # 'Release', 'Prerelease', 'Cleanup', or 'None'
         $majorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels -split ',' | ForEach-Object { $_.Trim() }
         $minorLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels -split ',' | ForEach-Object { $_.Trim() }
         $patchLabels = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels -split ',' | ForEach-Object { $_.Trim() }
@@ -60,6 +61,7 @@
             VersionPrefix            = $versionPrefix
             WhatIf                   = $whatIf
             IgnoreLabels             = $ignoreLabels
+            ReleaseType              = $releaseType
             MajorLabels              = $majorLabels
             MinorLabels              = $minorLabels
             PatchLabels              = $patchLabels
@@ -81,28 +83,11 @@
     }
 
     Set-GitHubLogGroup 'Event information - Details' {
-        $defaultBranchName = (gh repo view --json defaultBranchRef | ConvertFrom-Json | Select-Object -ExpandProperty defaultBranchRef).name
-        $isPullRequest = $githubEvent.PSObject.Properties.Name -contains 'pull_request'
-        if (-not ($isPullRequest -or $whatIf)) {
-            Write-Warning '⚠️ A release should not be created in this context. Exiting.'
-            exit
-        }
-        $actionType = $githubEvent.action
-        $isMerged = $pull_request.merged -eq 'True'
-        $prIsClosed = $pull_request.state -eq 'closed'
-        $prBaseRef = $pull_request.base.ref
         $prHeadRef = $pull_request.head.ref
-        $targetIsDefaultBranch = $pull_request.base.ref -eq $defaultBranchName
 
         Write-Output '-------------------------------------------------'
-        Write-Output "Default branch:                 [$defaultBranchName]"
-        Write-Output "Is a pull request event:        [$isPullRequest]"
-        Write-Output "Action type:                    [$actionType]"
-        Write-Output "PR Merged:                      [$isMerged]"
-        Write-Output "PR Closed:                      [$prIsClosed]"
-        Write-Output "PR Base Ref:                    [$prBaseRef]"
         Write-Output "PR Head Ref:                    [$prHeadRef]"
-        Write-Output "Target is default branch:       [$targetIsDefaultBranch]"
+        Write-Output "ReleaseType:                    [$releaseType]"
         Write-Output '-------------------------------------------------'
     }
 
@@ -117,14 +102,16 @@
     }
 
     Set-GitHubLogGroup 'Calculate release type' {
-        $createRelease = $isMerged -and $targetIsDefaultBranch
-        $closedPullRequest = $prIsClosed -and -not $isMerged
-        $createPrerelease = $labels -contains 'prerelease' -and -not $createRelease -and -not $closedPullRequest
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
+
+        # ReleaseType is determined by Get-PSModuleSettings
+        $createRelease = $releaseType -eq 'Release'
+        $createPrerelease = $releaseType -eq 'Prerelease'
+        $closedPullRequest = $releaseType -eq 'Cleanup'
 
         $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
         if ($ignoreRelease) {
-            Write-Output 'Ignoring release creation.'
+            Write-Output 'Ignoring release creation due to ignore label.'
             return
         }
 
@@ -135,12 +122,13 @@
         ).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
         Write-Output '-------------------------------------------------'
+        Write-Output "ReleaseType:                    [$releaseType]"
         Write-Output "Create a release:               [$createRelease]"
         Write-Output "Create a prerelease:            [$createPrerelease]"
         Write-Output "Create a major release:         [$majorRelease]"
         Write-Output "Create a minor release:         [$minorRelease]"
         Write-Output "Create a patch release:         [$patchRelease]"
-        Write-Output "Closed pull request:            [$closedPullRequest]"
+        Write-Output "Cleanup prereleases:            [$closedPullRequest]"
         Write-Output '-------------------------------------------------'
     }
 

@@ -49,6 +49,10 @@ inputs:
     description: A comma separated list of labels that do not trigger a release.
     required: false
     default: NoRelease
+  ReleaseType:
+    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', 'Cleanup' (delete old prereleases), or 'None'. When set, this overrides automatic detection.
+    required: false
+    default: ''
   WhatIf:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
@@ -87,6 +91,7 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType: ${{ inputs.ReleaseType }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
