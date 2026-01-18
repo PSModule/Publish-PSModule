@@ -1,7 +1,6 @@
 ﻿[CmdletBinding()]
 param()
 
-#region Load context from environment
 $prereleaseName = $env:PUBLISH_CONTEXT_PrereleaseName
 $prereleaseTagsToCleanup = $env:PUBLISH_CONTEXT_PrereleaseTagsToCleanup
 $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
@@ -10,10 +9,8 @@ if ([string]::IsNullOrWhiteSpace($prereleaseName)) {
     Write-Error 'PUBLISH_CONTEXT_PrereleaseName is not set. Run init.ps1 first.'
     exit 1
 }
-#endregion Load context from environment
 
-#region Cleanup prereleases
-Set-GitHubLogGroup "Cleanup prereleases for [$prereleaseName]" {
+LogGroup "Cleanup prereleases for [$prereleaseName]" {
     if ([string]::IsNullOrWhiteSpace($prereleaseTagsToCleanup)) {
         Write-Output "No prereleases found to cleanup for [$prereleaseName]."
         return
@@ -46,4 +43,3 @@ Set-GitHubLogGroup "Cleanup prereleases for [$prereleaseName]" {
 
     Write-Host "::notice::Cleaned up $($tagsToDelete.Count) prerelease(s) for [$prereleaseName]."
 }
-#endregion Cleanup prereleases

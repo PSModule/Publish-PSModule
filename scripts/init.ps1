@@ -1,37 +1,36 @@
 ﻿[CmdletBinding()]
 param()
 
-#region Install dependencies
-$retryCount = 5
-$retryDelay = 10
-for ($i = 0; $i -lt $retryCount; $i++) {
-    try {
-        Install-PSResource -Name 'PSSemVer' -TrustRepository -Repository PSGallery
-        break
-    } catch {
-        Write-Warning "Installation of PSSemVer failed with error: $_"
-        if ($i -eq $retryCount - 1) {
-            throw
+LogGroup 'Install dependencies' {
+    $retryCount = 5
+    $retryDelay = 10
+    for ($i = 0; $i -lt $retryCount; $i++) {
+        try {
+            Install-PSResource -Name 'PSSemVer' -TrustRepository -Repository PSGallery
+            break
+        } catch {
+            Write-Warning "Installation of PSSemVer failed with error: $_"
+            if ($i -eq $retryCount - 1) {
+                throw
+            }
+            Write-Warning "Retrying in $retryDelay seconds..."
+            Start-Sleep -Seconds $retryDelay
         }
-        Write-Warning "Retrying in $retryDelay seconds..."
-        Start-Sleep -Seconds $retryDelay
     }
 }
-#endregion Install dependencies
 
-#region Load inputs
-$env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
+LogGroup 'Load inputs' {
+    $env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
 
-$name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
-    $env:GITHUB_REPOSITORY_NAME
-} else {
-    $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
+    $name = if ([string]::IsNullOrEmpty($env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name)) {
+        $env:GITHUB_REPOSITORY_NAME
+    } else {
+        $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
+    }
+    Write-Output "Module name: [$name]"
 }
-Write-Output "Module name: [$name]"
-#endregion Load inputs
 
-#region Set configuration
-Set-GitHubLogGroup 'Set configuration' {
+LogGroup 'Set configuration' {
     $autoCleanup = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup -eq 'true'
     $autoPatching = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching -eq 'true'
     $incrementalPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease -eq 'true'
@@ -64,21 +63,19 @@ Set-GitHubLogGroup 'Set configuration' {
         PatchLabels           = $patchLabels
     } | Format-List | Out-String
 }
-#endregion Set configuration
 
-#region Event information
-Set-GitHubLogGroup 'Event information - JSON' {
+LogGroup 'Event information - JSON' {
     $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
     $githubEventJson | Format-List | Out-String
 }
 
-Set-GitHubLogGroup 'Event information - Object' {
+LogGroup 'Event information - Object' {
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
     $githubEvent | Format-List | Out-String
 }
 
-Set-GitHubLogGroup 'Event information - Details' {
+LogGroup 'Event information - Details' {
     if (-not $pull_request) {
         throw 'GitHub event does not contain pull_request data. This script must be run from a pull_request event.'
     }
@@ -90,19 +87,17 @@ Set-GitHubLogGroup 'Event information - Details' {
     Write-Output '-------------------------------------------------'
 }
 
-Set-GitHubLogGroup 'Pull request - details' {
+LogGroup 'Pull request - details' {
     $pull_request | Format-List | Out-String
 }
 
-Set-GitHubLogGroup 'Pull request - Labels' {
+LogGroup 'Pull request - Labels' {
     $labels = @()
     $labels += $pull_request.labels.name
     $labels | Format-List | Out-String
 }
-#endregion Event information
 
-#region Calculate release type
-Set-GitHubLogGroup 'Calculate release type' {
+LogGroup 'Calculate release type' {
     $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
     # Validate ReleaseType - defensive check for invalid values.
@@ -172,11 +167,11 @@ Set-GitHubLogGroup 'Calculate release type' {
 $newVersion = $null
 $releases = @()
 $prereleaseTagsToCleanup = ''
-$prereleaseName = ''
 
-if ($shouldPublish) {
-    #region Get releases and versions
-    Set-GitHubLogGroup 'Get all releases - GitHub' {
+# Fetch releases if publishing OR if cleanup is enabled (cleanup can work independently)
+if ($shouldPublish -or $autoCleanup) {
+    #region Get releases
+    LogGroup 'Get all releases - GitHub' {
         $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to list all releases for the repo.'
@@ -184,8 +179,13 @@ if ($shouldPublish) {
         }
         $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table | Out-String
     }
+    #endregion Get releases
+}
 
-    Set-GitHubLogGroup 'Get latest version - GitHub' {
+# Version calculation is only needed when publishing
+if ($shouldPublish) {
+    #region Get versions
+    LogGroup 'Get latest version - GitHub' {
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
         $latestRelease | Format-List | Out-String
         $ghReleaseVersionString = $latestRelease.tagName
@@ -201,7 +201,7 @@ if ($shouldPublish) {
         Write-Output '-------------------------------------------------'
     }
 
-    Set-GitHubLogGroup 'Get latest version - PSGallery' {
+    LogGroup 'Get latest version - PSGallery' {
         $count = 5
         $delay = 10
         for ($i = 1; $i -le $count; $i++) {
@@ -230,7 +230,7 @@ if ($shouldPublish) {
         Write-Output '-------------------------------------------------'
     }
 
-    Set-GitHubLogGroup 'Get latest version' {
+    LogGroup 'Get latest version' {
         Write-Output "GitHub:    [$($ghReleaseVersion.ToString())]"
         Write-Output "PSGallery: [$($psGalleryVersion.ToString())]"
         $latestVersion = New-PSSemVer -Version ($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
@@ -240,10 +240,8 @@ if ($shouldPublish) {
         Write-Output $latestVersion.ToString()
         Write-Output '-------------------------------------------------'
     }
-    #endregion Get releases and versions
 
-    #region Calculate new version
-    Set-GitHubLogGroup 'Calculate new version' {
+    LogGroup 'Calculate new version' {
         # - Increment based on label on PR
         $newVersion = New-PSSemVer -Version $latestVersion
         $newVersion.Prefix = $versionPrefix
@@ -327,21 +325,21 @@ if ($shouldPublish) {
         Write-Output '-------------------------------------------------'
     }
     #endregion Calculate new version
+}
 
-    #region Find prereleases to cleanup
-    Set-GitHubLogGroup 'Find prereleases to cleanup' {
+#region Find prereleases to cleanup
+# This runs independently when cleanup is enabled, even if not publishing
+if ($autoCleanup) {
+    LogGroup 'Find prereleases to cleanup' {
         $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
         $prereleaseTagsToCleanup = ($prereleasesToCleanup | ForEach-Object { $_.tagName }) -join ','
         Write-Output "Prereleases to cleanup: [$prereleaseTagsToCleanup]"
     }
-    #endregion Find prereleases to cleanup
-} else {
-    Write-Output "Skipping version calculation and release lookup because ShouldPublish is [$shouldPublish]."
 }
+#endregion Find prereleases to cleanup
 
-#region Store context in environment variables
-Set-GitHubLogGroup 'Store context in environment variables' {
+LogGroup 'Store context in environment variables' {
     # Store values for subsequent steps by appending to GITHUB_ENV
     $newVersionString = if ($newVersion) { $newVersion.ToString() } else { '' }
 
@@ -376,6 +374,5 @@ Set-GitHubLogGroup 'Store context in environment variables' {
     } | Format-List | Out-String
     Write-Output '-------------------------------------------------'
 }
-#endregion Store context in environment variables
 
 Write-Output "Context initialization complete. ShouldPublish=[$shouldPublish], ShouldCleanup=[$autoCleanup]"
