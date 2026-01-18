@@ -1,24 +1,6 @@
 ﻿[CmdletBinding()]
 param()
 
-#region Install dependencies
-$retryCount = 5
-$retryDelay = 10
-for ($i = 0; $i -lt $retryCount; $i++) {
-    try {
-        Install-PSResource -Name 'PSSemVer' -TrustRepository -Repository PSGallery
-        break
-    } catch {
-        Write-Warning "Installation of PSSemVer failed with error: $_"
-        if ($i -eq $retryCount - 1) {
-            throw
-        }
-        Write-Warning "Retrying in $retryDelay seconds..."
-        Start-Sleep -Seconds $retryDelay
-    }
-}
-#endregion Install dependencies
-
 #region Load inputs
 $env:GITHUB_REPOSITORY_NAME = $env:GITHUB_REPOSITORY -replace '.+/'
 
