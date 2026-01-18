@@ -50,8 +50,9 @@ inputs:
     required: false
     default: NoRelease
   ReleaseType:
-    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', 'Cleanup' (delete old prereleases), or 'None'. This input is required and must be provided by the caller.
-    required: true
+    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', 'Cleanup' (delete old prereleases), or 'None'.
+    required: false
+    default: Release
   WhatIf:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
