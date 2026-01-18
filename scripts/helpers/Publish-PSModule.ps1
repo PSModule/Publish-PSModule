@@ -104,10 +104,25 @@
     Set-GitHubLogGroup 'Calculate release type' {
         $prereleaseName = $prHeadRef -replace '[^a-zA-Z0-9]'
 
-        # ReleaseType is determined by Get-PSModuleSettings
+        # Validate ReleaseType - must be provided by Get-PSModuleSettings
+        $validReleaseTypes = @('Release', 'Prerelease', 'Cleanup', 'None')
+        if ([string]::IsNullOrWhiteSpace($releaseType)) {
+            Write-Error "ReleaseType input is required. Valid values are: $($validReleaseTypes -join ', ')"
+            exit 1
+        }
+        if ($releaseType -notin $validReleaseTypes) {
+            Write-Error "Invalid ReleaseType: [$releaseType]. Valid values are: $($validReleaseTypes -join ', ')"
+            exit 1
+        }
+
         $createRelease = $releaseType -eq 'Release'
         $createPrerelease = $releaseType -eq 'Prerelease'
         $closedPullRequest = $releaseType -eq 'Cleanup'
+
+        if ($releaseType -eq 'None') {
+            Write-Output 'ReleaseType is None. Skipping release creation.'
+            return
+        }
 
         $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
         if ($ignoreRelease) {
