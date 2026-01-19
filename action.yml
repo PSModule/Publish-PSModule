@@ -14,11 +14,11 @@ inputs:
     description: PowerShell Gallery API Key.
     required: true
   AutoCleanup:
-    description: Control wether to automatically delete the prerelease tags after the stable release is created.
+    description: Control whether to automatically delete the prerelease tags after the stable release is created.
     required: false
     default: 'true'
   AutoPatching:
-    description: Control wether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
+    description: Control whether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
     required: false
     default: 'true'
   IncrementalPrerelease:
@@ -49,6 +49,10 @@ inputs:
     description: A comma separated list of labels that do not trigger a release.
     required: false
     default: NoRelease
+  ReleaseType:
+    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', or 'None'.
+    required: false
+    default: Release
   WhatIf:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
@@ -76,24 +80,55 @@ runs:
     - name: Install-PSModuleHelpers
       uses: PSModule/Install-PSModuleHelpers@d60d63e4be477d1ca0c67c6085101fb109bce8f1 # v1.0.6
 
-    - name: Run Publish-PSModule
+    - name: Update Microsoft.PowerShell.PSResourceGet
+      shell: pwsh
+      run: |
+        Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -TrustRepository
+
+    - name: Initialize Publish Context
+      id: init
       shell: pwsh
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath: ${{ inputs.ModulePath }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey: ${{ inputs.APIKey }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType: ${{ inputs.ReleaseType }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
+      run: ${{ github.action_path }}/scripts/init.ps1
+
+    - name: Download module artifact
+      if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      with:
+        name: module
+        path: ${{ inputs.ModulePath }}
+
+    - name: Publish Module
+      if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
+      shell: pwsh
+      working-directory: ${{ inputs.WorkingDirectory }}
+      env:
+        PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath: ${{ inputs.ModulePath }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey: ${{ inputs.APIKey }}
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes: ${{ inputs.UsePRBodyAsReleaseNotes }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName: ${{ inputs.UsePRTitleAsReleaseName }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading: ${{ inputs.UsePRTitleAsNotesHeading }}
-      run: ${{ github.action_path }}/scripts/main.ps1
+      run: ${{ github.action_path }}/scripts/publish.ps1
+
+    - name: Cleanup Prereleases
+      if: env.PUBLISH_CONTEXT_ShouldCleanup == 'true' || inputs.WhatIf == 'true'
+      shell: pwsh
+      working-directory: ${{ inputs.WorkingDirectory }}
+      env:
+        PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
+      run: ${{ github.action_path }}/scripts/cleanup.ps1
