@@ -22,7 +22,7 @@ inputs:
     required: false
     default: 'true'
   IncrementalPrerelease:
-    description: Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
+    description: Control whether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
     required: false
     default: 'true'
   DatePrereleaseFormat:
