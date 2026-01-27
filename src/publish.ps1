@@ -54,6 +54,7 @@ LogGroup 'Load publish context from environment' {
 
     $newVersion = New-PSSemVer -Version $newVersionString
 
+    Write-Host '-------------------------------------------------'
     [PSCustomObject]@{
         CreateRelease    = $createRelease
         CreatePrerelease = $createPrerelease
@@ -62,6 +63,7 @@ LogGroup 'Load publish context from environment' {
         PRHeadRef        = $prHeadRef
         WhatIf           = $whatIf
     } | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Load PR information' {

@@ -345,7 +345,8 @@ if ($shouldPublish) {
         }
         Write-Host '-------------------------------------------------'
         Write-Host 'New version:'
-        Write-Host ($newVersion | Format-Table | Out-String)
+        $newVersion | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
         Write-Host $newVersion.ToString()
         Write-Host '-------------------------------------------------'
     }
