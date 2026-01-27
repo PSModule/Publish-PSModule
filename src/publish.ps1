@@ -83,6 +83,7 @@ LogGroup 'Install module dependencies' {
 }
 
 LogGroup 'Publish-ToPSGallery' {
+    $releaseType = if ($createPrerelease) { 'New prerelease' } else { 'New release' }
     if ($createPrerelease) {
         $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)-$($newVersion.Prerelease)"
     } else {
@@ -103,11 +104,11 @@ LogGroup 'Publish-ToPSGallery' {
     if ($whatIf) {
         Write-Output (
             "gh pr comment $prNumber -b " +
-            "'Module [$name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery.'"
+            "'✅ $releaseType`: PowerShell Gallery - [$name $publishPSVersion]($psGalleryReleaseLink)'"
         )
     } else {
-        Write-Host "::notice title=New publication: PowerShell Gallery - $name $publishPSVersion::$psGalleryReleaseLink"
-        gh pr comment $prNumber -b "Module [$name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
+        Write-Host "::notice title=$releaseType`: PowerShell Gallery - $name $publishPSVersion::$psGalleryReleaseLink"
+        gh pr comment $prNumber -b "✅ $releaseType`: PowerShell Gallery - [$name $publishPSVersion]($psGalleryReleaseLink)"
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to comment on the pull request.'
             exit $LASTEXITCODE
@@ -177,19 +178,20 @@ LogGroup 'New-GitHubRelease' {
         Remove-Item -Path $notesFilePath -Force
     }
 
+    $releaseType = if ($createPrerelease) { 'New prerelease' } else { 'New release' }
     if ($whatIf) {
         Write-Output (
             "gh pr comment $prNumber -b " +
-            "'GitHub release for $name $newVersion has been created.'"
+            "'✅ $releaseType`: GitHub - $name $newVersion'"
         )
     } else {
-        gh pr comment $prNumber -b "GitHub release for $name [$newVersion]($releaseURL) has been created."
+        gh pr comment $prNumber -b "✅ $releaseType`: GitHub - [$name $newVersion]($releaseURL)"
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to comment on the pull request.'
             exit $LASTEXITCODE
         }
     }
-    Write-Host "::notice title=New release: GitHub - $name $newVersion::$releaseURL"
+    Write-Host "::notice title=$releaseType`: GitHub - $name $newVersion::$releaseURL"
 }
 
 Write-Output "Publishing complete. Version: [$($newVersion.ToString())]"
