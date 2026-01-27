@@ -89,7 +89,7 @@ LogGroup 'Publish-ToPSGallery' {
         $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
     }
     $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$name/$publishPSVersion"
-    Write-Output "Publish module to PowerShell Gallery using API key from environment."
+    Write-Output 'Publish module to PowerShell Gallery using API key from environment.'
     if ($whatIf) {
         Write-Output "Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey ***"
     } else {
@@ -106,7 +106,7 @@ LogGroup 'Publish-ToPSGallery' {
             "'Module [$name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery.'"
         )
     } else {
-        Write-Host "::notice::Module [$name - $publishPSVersion] published to the PowerShell Gallery."
+        Write-Host "::notice title=New publication: PowerShell Gallery - $name $publishPSVersion::$psGalleryReleaseLink"
         gh pr comment $prNumber -b "Module [$name - $publishPSVersion]($psGalleryReleaseLink) published to the PowerShell Gallery."
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to comment on the pull request.'
@@ -189,7 +189,7 @@ LogGroup 'New-GitHubRelease' {
             exit $LASTEXITCODE
         }
     }
-    Write-Host "::notice::Release created: [$newVersion]"
+    Write-Host "::notice title=New release: GitHub - $name $newVersion::$releaseURL"
 }
 
 Write-Output "Publishing complete. Version: [$($newVersion.ToString())]"
