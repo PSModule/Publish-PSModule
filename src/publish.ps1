@@ -14,8 +14,8 @@ LogGroup 'Load inputs' {
     $modulePath = Resolve-Path -Path "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name" | Select-Object -ExpandProperty Path
     $apiKey = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
 
-    Write-Output "Module name: [$name]"
-    Write-Output "Module path: [$modulePath]"
+    Write-Host "Module name: [$name]"
+    Write-Host "Module path: [$modulePath]"
 }
 
 LogGroup 'Load publish context from environment' {
@@ -36,15 +36,15 @@ LogGroup 'Load publish context from environment' {
 
     $newVersion = New-PSSemVer -Version $newVersionString
 
-    Write-Output '-------------------------------------------------'
-    Write-Output 'Publish context:'
-    Write-Output "  CreateRelease:       [$createRelease]"
-    Write-Output "  CreatePrerelease:    [$createPrerelease]"
-    Write-Output "  NewVersion:          [$($newVersion.ToString())]"
-    Write-Output "  PRNumber:            [$prNumber]"
-    Write-Output "  PRHeadRef:           [$prHeadRef]"
-    Write-Output "  WhatIf:              [$whatIf]"
-    Write-Output '-------------------------------------------------'
+    Write-Host '-------------------------------------------------'
+    Write-Host 'Publish context:'
+    Write-Host "  CreateRelease:       [$createRelease]"
+    Write-Host "  CreatePrerelease:    [$createPrerelease]"
+    Write-Host "  NewVersion:          [$($newVersion.ToString())]"
+    Write-Host "  PRNumber:            [$prNumber]"
+    Write-Host "  PRHeadRef:           [$prHeadRef]"
+    Write-Host "  WhatIf:              [$whatIf]"
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Load PR information' {
@@ -59,7 +59,7 @@ LogGroup 'Load PR information' {
 LogGroup 'Validate manifest and set module path' {
     Add-PSModulePath -Path (Split-Path -Path $modulePath -Parent)
     $manifestFilePath = Join-Path $modulePath "$name.psd1"
-    Write-Output "Module manifest file path: [$manifestFilePath]"
+    Write-Host "Module manifest file path: [$manifestFilePath]"
     if (-not (Test-Path -Path $manifestFilePath)) {
         Write-Error "Module manifest file not found at [$manifestFilePath]"
         exit 1
@@ -67,11 +67,11 @@ LogGroup 'Validate manifest and set module path' {
 }
 
 LogGroup 'Update module manifest' {
-    Write-Output 'Bump module version -> module metadata: Update-ModuleMetadata'
+    Write-Host 'Bump module version -> module metadata: Update-ModuleMetadata'
     $manifestNewVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
     Set-ModuleManifest -Path $manifestFilePath -ModuleVersion $manifestNewVersion -Verbose:$false
     if ($createPrerelease) {
-        Write-Output "Prerelease is: [$($newVersion.Prerelease)]"
+        Write-Host "Prerelease is: [$($newVersion.Prerelease)]"
         Set-ModuleManifest -Path $manifestFilePath -Prerelease $($newVersion.Prerelease) -Verbose:$false
     }
 
@@ -90,9 +90,9 @@ LogGroup 'Publish-ToPSGallery' {
         $publishPSVersion = "$($newVersion.Major).$($newVersion.Minor).$($newVersion.Patch)"
     }
     $psGalleryReleaseLink = "https://www.powershellgallery.com/packages/$name/$publishPSVersion"
-    Write-Output 'Publish module to PowerShell Gallery using API key from environment.'
+    Write-Host 'Publish module to PowerShell Gallery using API key from environment.'
     if ($whatIf) {
-        Write-Output "Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey ***"
+        Write-Host "Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey ***"
     } else {
         try {
             Publish-PSResource -Path $modulePath -Repository PSGallery -ApiKey $apiKey
@@ -102,7 +102,7 @@ LogGroup 'Publish-ToPSGallery' {
         }
     }
     if ($whatIf) {
-        Write-Output (
+        Write-Host (
             "gh pr comment $prNumber -b " +
             "'✅ $releaseType`: PowerShell Gallery - [$name $publishPSVersion]($psGalleryReleaseLink)'"
         )
@@ -117,7 +117,7 @@ LogGroup 'Publish-ToPSGallery' {
 }
 
 LogGroup 'New-GitHubRelease' {
-    Write-Output 'Create new GitHub release'
+    Write-Host 'Create new GitHub release'
     $releaseCreateCommand = @('release', 'create', $newVersion.ToString())
     $notesFilePath = $null
 
@@ -125,7 +125,7 @@ LogGroup 'New-GitHubRelease' {
     if ($usePRTitleAsReleaseName -and $pull_request.title) {
         $prTitle = $pull_request.title
         $releaseCreateCommand += @('--title', $prTitle)
-        Write-Output "Using PR title as release name: [$prTitle]"
+        Write-Host "Using PR title as release name: [$prTitle]"
     } else {
         $releaseCreateCommand += @('--title', $newVersion.ToString())
     }
@@ -145,14 +145,14 @@ LogGroup 'New-GitHubRelease' {
         $notesFilePath = [System.IO.Path]::GetTempFileName()
         Set-Content -Path $notesFilePath -Value $notes -Encoding utf8
         $releaseCreateCommand += @('--notes-file', $notesFilePath)
-        Write-Output 'Using PR title as H1 heading with link and body as release notes'
+        Write-Host 'Using PR title as H1 heading with link and body as release notes'
     } elseif ($usePRBodyAsReleaseNotes -and $pull_request.body) {
         # Path 2: PR body only - no heading, just the body content
         $prBody = $pull_request.body
         $notesFilePath = [System.IO.Path]::GetTempFileName()
         Set-Content -Path $notesFilePath -Value $prBody -Encoding utf8
         $releaseCreateCommand += @('--notes-file', $notesFilePath)
-        Write-Output 'Using PR body as release notes'
+        Write-Host 'Using PR body as release notes'
     } else {
         # Path 3: Fallback to GitHub's auto-generated release notes
         $releaseCreateCommand += @('--generate-notes')
@@ -164,7 +164,7 @@ LogGroup 'New-GitHubRelease' {
     }
 
     if ($whatIf) {
-        Write-Output "WhatIf: gh $($releaseCreateCommand -join ' ')"
+        Write-Host "WhatIf: gh $($releaseCreateCommand -join ' ')"
     } else {
         $releaseURL = gh @releaseCreateCommand
         if ($LASTEXITCODE -ne 0) {
@@ -180,7 +180,7 @@ LogGroup 'New-GitHubRelease' {
 
     $releaseType = if ($createPrerelease) { 'New prerelease' } else { 'New release' }
     if ($whatIf) {
-        Write-Output (
+        Write-Host (
             "gh pr comment $prNumber -b " +
             "'✅ $releaseType`: GitHub - $name $newVersion'"
         )
@@ -194,4 +194,4 @@ LogGroup 'New-GitHubRelease' {
     Write-Host "::notice title=✅ $releaseType`: GitHub - $name $newVersion::$releaseURL"
 }
 
-Write-Output "Publishing complete. Version: [$($newVersion.ToString())]"
+Write-Host "Publishing complete. Version: [$($newVersion.ToString())]"

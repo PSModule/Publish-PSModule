@@ -50,6 +50,7 @@
         }
     }
     ExcludeRules = @(
+        'PSAvoidUsingWriteHost', # This action runs on GitHub Actions which supports Write-Host.
         'PSMissingModuleManifestField', # This rule is not applicable until the module is built.
         'PSUseToExportFieldsInManifest'
     )
