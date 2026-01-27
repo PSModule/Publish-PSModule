@@ -1,6 +1,8 @@
 ﻿[CmdletBinding()]
 param()
 
+$PSStyle.OutputRendering = 'Ansi'
+
 Import-Module -Name 'Helpers' -Force
 
 $prereleaseName = $env:PUBLISH_CONTEXT_PrereleaseName
@@ -14,32 +16,32 @@ if ([string]::IsNullOrWhiteSpace($prereleaseName)) {
 
 LogGroup "Cleanup prereleases for [$prereleaseName]" {
     if ([string]::IsNullOrWhiteSpace($prereleaseTagsToCleanup)) {
-        Write-Output "No prereleases found to cleanup for [$prereleaseName]."
+        Write-Host "No prereleases found to cleanup for [$prereleaseName]."
         return
     }
 
     $tagsToDelete = $prereleaseTagsToCleanup -split ',' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
 
     if ($tagsToDelete.Count -eq 0) {
-        Write-Output "No prereleases found to cleanup for [$prereleaseName]."
+        Write-Host "No prereleases found to cleanup for [$prereleaseName]."
         return
     }
 
-    Write-Output "Found $($tagsToDelete.Count) prereleases to cleanup:"
-    $tagsToDelete | ForEach-Object { Write-Output "  - $_" }
-    Write-Output ''
+    Write-Host "Found $($tagsToDelete.Count) prereleases to cleanup:"
+    $tagsToDelete | ForEach-Object { Write-Host "  - $_" }
+    Write-Host ''
 
     foreach ($tag in $tagsToDelete) {
-        Write-Output "Deleting prerelease: [$tag]"
+        Write-Host "Deleting prerelease: [$tag]"
         if ($whatIf) {
-            Write-Output "WhatIf: gh release delete $tag --cleanup-tag --yes"
+            Write-Host "WhatIf: gh release delete $tag --cleanup-tag --yes"
         } else {
             gh release delete $tag --cleanup-tag --yes
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "Failed to delete release [$tag]."
                 exit $LASTEXITCODE
             }
-            Write-Output "Successfully deleted release [$tag]."
+            Write-Host "Successfully deleted release [$tag]."
         }
     }
 

@@ -22,7 +22,7 @@ inputs:
     required: false
     default: 'true'
   IncrementalPrerelease:
-    description: Control wether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
+    description: Control whether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
     required: false
     default: 'true'
   DatePrereleaseFormat:
@@ -102,7 +102,7 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-      run: ${{ github.action_path }}/scripts/init.ps1
+      run: ${{ github.action_path }}/src/init.ps1
 
     - name: Download module artifact
       if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
@@ -123,7 +123,7 @@ runs:
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes: ${{ inputs.UsePRBodyAsReleaseNotes }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsReleaseName: ${{ inputs.UsePRTitleAsReleaseName }}
         PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRTitleAsNotesHeading: ${{ inputs.UsePRTitleAsNotesHeading }}
-      run: ${{ github.action_path }}/scripts/publish.ps1
+      run: ${{ github.action_path }}/src/publish.ps1
 
     - name: Cleanup Prereleases
       if: env.PUBLISH_CONTEXT_ShouldCleanup == 'true' || inputs.WhatIf == 'true'
@@ -131,4 +131,4 @@ runs:
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-      run: ${{ github.action_path }}/scripts/cleanup.ps1
+      run: ${{ github.action_path }}/src/cleanup.ps1

@@ -1,5 +1,15 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'pull_request',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'prereleaseName',
+    Justification = 'Variable is used in script blocks.'
+)]
+[CmdletBinding()]
 param()
+
+$PSStyle.OutputRendering = 'Ansi'
 
 Import-Module -Name 'Helpers' -Force
 
@@ -29,7 +39,7 @@ LogGroup 'Load inputs' {
     } else {
         $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
     }
-    Write-Output "Module name: [$name]"
+    Write-Host "Module name: [$name]"
 }
 
 LogGroup 'Set configuration' {
@@ -51,6 +61,7 @@ LogGroup 'Set configuration' {
         Write-Host "::warning::$message"
     }
 
+    Write-Host '-------------------------------------------------'
     [pscustomobject]@{
         AutoCleanup           = $autoCleanup
         AutoPatching          = $autoPatching
@@ -64,17 +75,22 @@ LogGroup 'Set configuration' {
         MinorLabels           = $minorLabels
         PatchLabels           = $patchLabels
     } | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - JSON' {
     $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
+    Write-Host '-------------------------------------------------'
     $githubEventJson | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - Object' {
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
+    Write-Host '-------------------------------------------------'
     $githubEvent | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - Details' {
@@ -83,20 +99,26 @@ LogGroup 'Event information - Details' {
     }
     $prHeadRef = $pull_request.head.ref
 
-    Write-Output '-------------------------------------------------'
-    Write-Output "PR Head Ref:                    [$prHeadRef]"
-    Write-Output "ReleaseType:                    [$releaseType]"
-    Write-Output '-------------------------------------------------'
+    Write-Host '-------------------------------------------------'
+    [PSCustomObject]@{
+        PRHeadRef   = $prHeadRef
+        ReleaseType = $releaseType
+    } | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Pull request - details' {
+    Write-Host '-------------------------------------------------'
     $pull_request | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Pull request - Labels' {
     $labels = @()
     $labels += $pull_request.labels.name
+    Write-Host '-------------------------------------------------'
     $labels | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Determine release configuration' {
@@ -122,7 +144,7 @@ LogGroup 'Determine release configuration' {
     # Check for ignore labels that override the release type
     $ignoreRelease = ($labels | Where-Object { $ignoreLabels -contains $_ }).Count -gt 0
     if ($ignoreRelease -and $shouldPublish) {
-        Write-Output 'Ignoring release creation due to ignore label.'
+        Write-Host 'Ignoring release creation due to ignore label.'
         $shouldPublish = $false
     }
 
@@ -141,23 +163,25 @@ LogGroup 'Determine release configuration' {
 
         $hasVersionBump = $majorRelease -or $minorRelease -or $patchRelease
         if (-not $hasVersionBump) {
-            Write-Output 'No version bump label found and AutoPatching is disabled. Skipping publish.'
+            Write-Host 'No version bump label found and AutoPatching is disabled. Skipping publish.'
             $shouldPublish = $false
         }
     } elseif (-not $ignoreRelease) {
-        Write-Output "ReleaseType is [$releaseType]. No publishing required."
+        Write-Host "ReleaseType is [$releaseType]. No publishing required."
     }
 
-    Write-Output '-------------------------------------------------'
-    Write-Output "ReleaseType:                    [$releaseType]"
-    Write-Output "AutoCleanup:                    [$autoCleanup]"
-    Write-Output "Should publish:                 [$shouldPublish]"
-    Write-Output "Create a release:               [$createRelease]"
-    Write-Output "Create a prerelease:            [$createPrerelease]"
-    Write-Output "Create a major release:         [$majorRelease]"
-    Write-Output "Create a minor release:         [$minorRelease]"
-    Write-Output "Create a patch release:         [$patchRelease]"
-    Write-Output '-------------------------------------------------'
+    Write-Host '-------------------------------------------------'
+    [PSCustomObject]@{
+        ReleaseType      = $releaseType
+        AutoCleanup      = $autoCleanup
+        ShouldPublish    = $shouldPublish
+        CreateRelease    = $createRelease
+        CreatePrerelease = $createPrerelease
+        CreateMajor      = $majorRelease
+        CreateMinor      = $minorRelease
+        CreatePatch      = $patchRelease
+    } | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 #endregion Calculate release type
 
@@ -175,7 +199,9 @@ if ($shouldPublish -or $autoCleanup) {
             Write-Error 'Failed to list all releases for the repo.'
             exit $LASTEXITCODE
         }
+        Write-Host '-------------------------------------------------'
         $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
     }
     #endregion Get releases
 }
@@ -185,6 +211,7 @@ if ($shouldPublish) {
     #region Get versions
     LogGroup 'Get latest version - GitHub' {
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
+        Write-Host '-------------------------------------------------'
         $latestRelease | Format-List | Out-String
         $ghReleaseVersionString = $latestRelease.tagName
         if (-not [string]::IsNullOrEmpty($ghReleaseVersionString)) {
@@ -193,10 +220,10 @@ if ($shouldPublish) {
             Write-Warning 'Could not find the latest release version. Using ''0.0.0'' as the version.'
             $ghReleaseVersion = New-PSSemVer -Version '0.0.0'
         }
-        Write-Output '-------------------------------------------------'
-        Write-Output 'GitHub version:'
-        Write-Output $ghReleaseVersion.ToString()
-        Write-Output '-------------------------------------------------'
+        Write-Host '-------------------------------------------------'
+        Write-Host 'GitHub version:'
+        Write-Host $ghReleaseVersion.ToString()
+        Write-Host '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version - PSGallery' {
@@ -204,9 +231,9 @@ if ($shouldPublish) {
         $delay = 10
         for ($i = 1; $i -le $count; $i++) {
             try {
-                Write-Output "Finding module [$name] in the PowerShell Gallery."
+                Write-Host "Finding module [$name] in the PowerShell Gallery."
                 $latest = Find-PSResource -Name $name -Repository PSGallery -Verbose:$false
-                Write-Output "$($latest | Format-Table | Out-String)"
+                Write-Host "$($latest | Format-Table | Out-String)"
                 break
             } catch {
                 if ($i -eq $count) {
@@ -222,21 +249,21 @@ if ($shouldPublish) {
             Write-Warning 'Could not find module online. Using ''0.0.0'' as the version.'
             $psGalleryVersion = New-PSSemVer -Version '0.0.0'
         }
-        Write-Output '-------------------------------------------------'
-        Write-Output 'PSGallery version:'
-        Write-Output $psGalleryVersion.ToString()
-        Write-Output '-------------------------------------------------'
+        Write-Host '-------------------------------------------------'
+        Write-Host 'PSGallery version:'
+        Write-Host $psGalleryVersion.ToString()
+        Write-Host '-------------------------------------------------'
     }
 
     LogGroup 'Get latest version' {
-        Write-Output "GitHub:    [$($ghReleaseVersion.ToString())]"
-        Write-Output "PSGallery: [$($psGalleryVersion.ToString())]"
+        Write-Host "GitHub:    [$($ghReleaseVersion.ToString())]"
+        Write-Host "PSGallery: [$($psGalleryVersion.ToString())]"
         $latestVersion = New-PSSemVer -Version ($psGalleryVersion, $ghReleaseVersion | Sort-Object -Descending | Select-Object -First 1)
-        Write-Output '-------------------------------------------------'
-        Write-Output 'Latest version:'
-        Write-Output ($latestVersion | Format-Table | Out-String)
-        Write-Output $latestVersion.ToString()
-        Write-Output '-------------------------------------------------'
+        Write-Host '-------------------------------------------------'
+        Write-Host 'Latest version:'
+        Write-Host ($latestVersion | Format-Table | Out-String)
+        Write-Host $latestVersion.ToString()
+        Write-Host '-------------------------------------------------'
     }
 
     LogGroup 'Calculate new version' {
@@ -244,32 +271,32 @@ if ($shouldPublish) {
         $newVersion = New-PSSemVer -Version $latestVersion
         $newVersion.Prefix = $versionPrefix
         if ($majorRelease) {
-            Write-Output 'Incrementing major version.'
+            Write-Host 'Incrementing major version.'
             $newVersion.BumpMajor()
         } elseif ($minorRelease) {
-            Write-Output 'Incrementing minor version.'
+            Write-Host 'Incrementing minor version.'
             $newVersion.BumpMinor()
         } elseif ($patchRelease) {
-            Write-Output 'Incrementing patch version.'
+            Write-Host 'Incrementing patch version.'
             $newVersion.BumpPatch()
         } else {
-            Write-Output 'No version bump required.'
+            Write-Host 'No version bump required.'
         }
 
-        Write-Output "Partial new version: [$newVersion]"
+        Write-Host "Partial new version: [$newVersion]"
 
         if ($createPrerelease -and $hasVersionBump) {
-            Write-Output "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
-            Write-Output ($releases | Where-Object { $_.tagName -like "*$prereleaseName*" } |
+            Write-Host "Adding a prerelease tag to the version using the branch name [$prereleaseName]."
+            Write-Host ($releases | Where-Object { $_.tagName -like "*$prereleaseName*" } |
                     Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table -AutoSize | Out-String)
 
             $newVersion.Prerelease = $prereleaseName
-            Write-Output "Partial new version: [$newVersion]"
+            Write-Host "Partial new version: [$newVersion]"
 
             if (-not [string]::IsNullOrEmpty($datePrereleaseFormat)) {
-                Write-Output "Using date-based prerelease: [$datePrereleaseFormat]."
+                Write-Host "Using date-based prerelease: [$datePrereleaseFormat]."
                 $newVersion.Prerelease += "$(Get-Date -Format $datePrereleaseFormat)"
-                Write-Output "Partial new version: [$newVersion]"
+                Write-Host "Partial new version: [$newVersion]"
             }
 
             if ($incrementalPrerelease) {
@@ -285,15 +312,15 @@ if ($shouldPublish) {
                     Verbose     = $false
                     ErrorAction = 'SilentlyContinue'
                 }
-                Write-Output 'Finding the latest prerelease version in the PowerShell Gallery.'
-                Write-Output ($params | Format-Table | Out-String)
+                Write-Host 'Finding the latest prerelease version in the PowerShell Gallery.'
+                Write-Host ($params | Format-Table | Out-String)
                 $psGalleryPrereleases = Find-PSResource @params
                 $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Version -like "$newVersionString" }
                 $psGalleryPrereleases = $psGalleryPrereleases | Where-Object { $_.Prerelease -like "$prereleaseName*" }
                 $latestPSGalleryPrerelease = $psGalleryPrereleases.Prerelease | ForEach-Object {
                     [int]($_ -replace $prereleaseName)
                 } | Sort-Object | Select-Object -Last 1
-                Write-Output "PSGallery prerelease: [$latestPSGalleryPrerelease]"
+                Write-Host "PSGallery prerelease: [$latestPSGalleryPrerelease]"
 
                 # GitHub
                 $ghPrereleases = $releases | Where-Object { $_.tagName -like "*$newVersionString*" }
@@ -304,7 +331,7 @@ if ($shouldPublish) {
                     $number = ($number -split $prereleaseName, 2)[-1]
                     [int]$number
                 } | Sort-Object | Select-Object -Last 1
-                Write-Output "GitHub prerelease: [$latestGHPrereleases]"
+                Write-Host "GitHub prerelease: [$latestGHPrereleases]"
 
                 # Handle null values explicitly to ensure Math.Max works correctly
                 if ($null -eq $latestPSGalleryPrerelease) { $latestPSGalleryPrerelease = 0 }
@@ -316,11 +343,12 @@ if ($shouldPublish) {
                 $newVersion.Prerelease += $latestPrereleaseNumber
             }
         }
-        Write-Output '-------------------------------------------------'
-        Write-Output 'New version:'
-        Write-Output ($newVersion | Format-Table | Out-String)
-        Write-Output $newVersion.ToString()
-        Write-Output '-------------------------------------------------'
+        Write-Host '-------------------------------------------------'
+        Write-Host 'New version:'
+        $newVersion | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
+        Write-Host $newVersion.ToString()
+        Write-Host '-------------------------------------------------'
     }
     #endregion Calculate new version
 }
@@ -330,9 +358,11 @@ if ($shouldPublish) {
 if ($autoCleanup) {
     LogGroup 'Find prereleases to cleanup' {
         $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+        Write-Host '-------------------------------------------------'
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
         $prereleaseTagsToCleanup = ($prereleasesToCleanup | ForEach-Object { $_.tagName }) -join ','
-        Write-Output "Prereleases to cleanup: [$prereleaseTagsToCleanup]"
+        Write-Host "Prereleases to cleanup: [$prereleaseTagsToCleanup]"
     }
 }
 #endregion Find prereleases to cleanup
@@ -354,8 +384,8 @@ LogGroup 'Store context in environment variables' {
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PRNumber=$($pull_request.number.ToString())"
     Add-Content -Path $env:GITHUB_ENV -Value "PUBLISH_CONTEXT_PRHeadRef=$prHeadRef"
 
-    Write-Output '-------------------------------------------------'
-    Write-Output 'Stored environment variables:'
+    Write-Host '-------------------------------------------------'
+    Write-Host 'Stored environment variables:'
     [PSCustomObject]@{
         ShouldPublish           = $shouldPublish
         ShouldCleanup           = $autoCleanup
@@ -370,7 +400,7 @@ LogGroup 'Store context in environment variables' {
         PRNumber                = $pull_request.number
         PRHeadRef               = $prHeadRef
     } | Format-List | Out-String
-    Write-Output '-------------------------------------------------'
+    Write-Host '-------------------------------------------------'
 }
 
-Write-Output "Context initialization complete. ShouldPublish=[$shouldPublish], ShouldCleanup=[$autoCleanup]"
+Write-Host "Context initialization complete. ShouldPublish=[$shouldPublish], ShouldCleanup=[$autoCleanup]"
