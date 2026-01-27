@@ -107,7 +107,7 @@ LogGroup 'Publish-ToPSGallery' {
             "'✅ $releaseType`: PowerShell Gallery - [$name $publishPSVersion]($psGalleryReleaseLink)'"
         )
     } else {
-        Write-Host "::notice title=$releaseType`: PowerShell Gallery - $name $publishPSVersion::$psGalleryReleaseLink"
+        Write-Host "::notice title=✅ $releaseType`: PowerShell Gallery - $name $publishPSVersion::$psGalleryReleaseLink"
         gh pr comment $prNumber -b "✅ $releaseType`: PowerShell Gallery - [$name $publishPSVersion]($psGalleryReleaseLink)"
         if ($LASTEXITCODE -ne 0) {
             Write-Error 'Failed to comment on the pull request.'
@@ -191,7 +191,7 @@ LogGroup 'New-GitHubRelease' {
             exit $LASTEXITCODE
         }
     }
-    Write-Host "::notice title=$releaseType`: GitHub - $name $newVersion::$releaseURL"
+    Write-Host "::notice title=✅ $releaseType`: GitHub - $name $newVersion::$releaseURL"
 }
 
 Write-Output "Publishing complete. Version: [$($newVersion.ToString())]"
