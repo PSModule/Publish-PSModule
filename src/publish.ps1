@@ -1,4 +1,20 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'apiKey',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'usePRBodyAsReleaseNotes',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'usePRTitleAsReleaseName',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'usePRTitleAsNotesHeading',
+    Justification = 'Variable is used in script blocks.'
+)]
+[CmdletBinding()]
 param()
 
 Import-Module -Name 'Helpers' -Force

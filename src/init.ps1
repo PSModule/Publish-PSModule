@@ -1,4 +1,12 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'pull_request',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'prereleaseName',
+    Justification = 'Variable is used in script blocks.'
+)]
+[CmdletBinding()]
 param()
 
 Import-Module -Name 'Helpers' -Force
