@@ -17,6 +17,8 @@
 [CmdletBinding()]
 param()
 
+$PSStyle.OutputRendering = 'Ansi'
+
 Import-Module -Name 'Helpers' -Force
 
 LogGroup 'Load inputs' {

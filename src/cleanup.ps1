@@ -1,6 +1,8 @@
 ﻿[CmdletBinding()]
 param()
 
+$PSStyle.OutputRendering = 'Ansi'
+
 Import-Module -Name 'Helpers' -Force
 
 $prereleaseName = $env:PUBLISH_CONTEXT_PrereleaseName
