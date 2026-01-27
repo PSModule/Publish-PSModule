@@ -52,15 +52,14 @@ LogGroup 'Load publish context from environment' {
 
     $newVersion = New-PSSemVer -Version $newVersionString
 
-    Write-Host '-------------------------------------------------'
-    Write-Host 'Publish context:'
-    Write-Host "  CreateRelease:       [$createRelease]"
-    Write-Host "  CreatePrerelease:    [$createPrerelease]"
-    Write-Host "  NewVersion:          [$($newVersion.ToString())]"
-    Write-Host "  PRNumber:            [$prNumber]"
-    Write-Host "  PRHeadRef:           [$prHeadRef]"
-    Write-Host "  WhatIf:              [$whatIf]"
-    Write-Host '-------------------------------------------------'
+    [PSCustomObject]@{
+        CreateRelease    = $createRelease
+        CreatePrerelease = $createPrerelease
+        NewVersion       = $newVersion.ToString()
+        PRNumber         = $prNumber
+        PRHeadRef        = $prHeadRef
+        WhatIf           = $whatIf
+    } | Format-List | Out-String
 }
 
 LogGroup 'Load PR information' {

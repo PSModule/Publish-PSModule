@@ -59,6 +59,7 @@ LogGroup 'Set configuration' {
         Write-Host "::warning::$message"
     }
 
+    Write-Host '-------------------------------------------------'
     [pscustomobject]@{
         AutoCleanup           = $autoCleanup
         AutoPatching          = $autoPatching
@@ -72,17 +73,22 @@ LogGroup 'Set configuration' {
         MinorLabels           = $minorLabels
         PatchLabels           = $patchLabels
     } | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - JSON' {
     $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
+    Write-Host '-------------------------------------------------'
     $githubEventJson | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - Object' {
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
+    Write-Host '-------------------------------------------------'
     $githubEvent | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Event information - Details' {
@@ -92,19 +98,25 @@ LogGroup 'Event information - Details' {
     $prHeadRef = $pull_request.head.ref
 
     Write-Host '-------------------------------------------------'
-    Write-Host "PR Head Ref:                    [$prHeadRef]"
-    Write-Host "ReleaseType:                    [$releaseType]"
+    [PSCustomObject]@{
+        PRHeadRef   = $prHeadRef
+        ReleaseType = $releaseType
+    } | Format-List | Out-String
     Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Pull request - details' {
+    Write-Host '-------------------------------------------------'
     $pull_request | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Pull request - Labels' {
     $labels = @()
     $labels += $pull_request.labels.name
+    Write-Host '-------------------------------------------------'
     $labels | Format-List | Out-String
+    Write-Host '-------------------------------------------------'
 }
 
 LogGroup 'Determine release configuration' {
@@ -157,14 +169,16 @@ LogGroup 'Determine release configuration' {
     }
 
     Write-Host '-------------------------------------------------'
-    Write-Host "ReleaseType:                    [$releaseType]"
-    Write-Host "AutoCleanup:                    [$autoCleanup]"
-    Write-Host "Should publish:                 [$shouldPublish]"
-    Write-Host "Create a release:               [$createRelease]"
-    Write-Host "Create a prerelease:            [$createPrerelease]"
-    Write-Host "Create a major release:         [$majorRelease]"
-    Write-Host "Create a minor release:         [$minorRelease]"
-    Write-Host "Create a patch release:         [$patchRelease]"
+    [PSCustomObject]@{
+        ReleaseType       = $releaseType
+        AutoCleanup       = $autoCleanup
+        ShouldPublish     = $shouldPublish
+        CreateRelease     = $createRelease
+        CreatePrerelease  = $createPrerelease
+        CreateMajor       = $majorRelease
+        CreateMinor       = $minorRelease
+        CreatePatch       = $patchRelease
+    } | Format-List | Out-String
     Write-Host '-------------------------------------------------'
 }
 #endregion Calculate release type
@@ -183,7 +197,9 @@ if ($shouldPublish -or $autoCleanup) {
             Write-Error 'Failed to list all releases for the repo.'
             exit $LASTEXITCODE
         }
+        Write-Host '-------------------------------------------------'
         $releases | Select-Object -Property name, isPrerelease, isLatest, publishedAt | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
     }
     #endregion Get releases
 }
@@ -193,6 +209,7 @@ if ($shouldPublish) {
     #region Get versions
     LogGroup 'Get latest version - GitHub' {
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
+        Write-Host '-------------------------------------------------'
         $latestRelease | Format-List | Out-String
         $ghReleaseVersionString = $latestRelease.tagName
         if (-not [string]::IsNullOrEmpty($ghReleaseVersionString)) {
@@ -338,7 +355,9 @@ if ($shouldPublish) {
 if ($autoCleanup) {
     LogGroup 'Find prereleases to cleanup' {
         $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+        Write-Host '-------------------------------------------------'
         $prereleasesToCleanup | Select-Object -Property name, publishedAt, isPrerelease, isLatest | Format-Table | Out-String
+        Write-Host '-------------------------------------------------'
         $prereleaseTagsToCleanup = ($prereleasesToCleanup | ForEach-Object { $_.tagName }) -join ','
         Write-Host "Prereleases to cleanup: [$prereleaseTagsToCleanup]"
     }
