@@ -170,14 +170,14 @@ LogGroup 'Determine release configuration' {
 
     Write-Host '-------------------------------------------------'
     [PSCustomObject]@{
-        ReleaseType       = $releaseType
-        AutoCleanup       = $autoCleanup
-        ShouldPublish     = $shouldPublish
-        CreateRelease     = $createRelease
-        CreatePrerelease  = $createPrerelease
-        CreateMajor       = $majorRelease
-        CreateMinor       = $minorRelease
-        CreatePatch       = $patchRelease
+        ReleaseType      = $releaseType
+        AutoCleanup      = $autoCleanup
+        ShouldPublish    = $shouldPublish
+        CreateRelease    = $createRelease
+        CreatePrerelease = $createPrerelease
+        CreateMajor      = $majorRelease
+        CreateMinor      = $minorRelease
+        CreatePatch      = $patchRelease
     } | Format-List | Out-String
     Write-Host '-------------------------------------------------'
 }
