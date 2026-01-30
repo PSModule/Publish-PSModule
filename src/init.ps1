@@ -148,13 +148,13 @@ LogGroup 'Determine release configuration' {
         $shouldPublish = $false
     }
 
-    # Determine version bump type from labels (only when publishing)
+    # Determine version bump type from labels (when publishing or in WhatIf mode to show what would happen)
     $majorRelease = $false
     $minorRelease = $false
     $patchRelease = $false
     $hasVersionBump = $false
 
-    if ($shouldPublish) {
+    if ($shouldPublish -or $whatIf) {
         $majorRelease = ($labels | Where-Object { $majorLabels -contains $_ }).Count -gt 0
         $minorRelease = ($labels | Where-Object { $minorLabels -contains $_ }).Count -gt 0 -and -not $majorRelease
         $patchRelease = (
@@ -162,7 +162,7 @@ LogGroup 'Determine release configuration' {
         ).Count -gt 0 -or $autoPatching) -and -not $majorRelease -and -not $minorRelease
 
         $hasVersionBump = $majorRelease -or $minorRelease -or $patchRelease
-        if (-not $hasVersionBump) {
+        if (-not $hasVersionBump -and $shouldPublish) {
             Write-Host 'No version bump label found and AutoPatching is disabled. Skipping publish.'
             $shouldPublish = $false
         }
@@ -190,8 +190,8 @@ $newVersion = $null
 $releases = @()
 $prereleaseTagsToCleanup = ''
 
-# Fetch releases if publishing OR if cleanup is enabled (cleanup can work independently)
-if ($shouldPublish -or $autoCleanup) {
+# Fetch releases if publishing OR if cleanup is enabled OR WhatIf mode (to show what would happen)
+if ($shouldPublish -or $autoCleanup -or $whatIf) {
     #region Get releases
     LogGroup 'Get all releases - GitHub' {
         $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
@@ -206,8 +206,8 @@ if ($shouldPublish -or $autoCleanup) {
     #endregion Get releases
 }
 
-# Version calculation is only needed when publishing
-if ($shouldPublish) {
+# Version calculation is needed when publishing OR in WhatIf mode (to show what would be created)
+if ($shouldPublish -or $whatIf) {
     #region Get versions
     LogGroup 'Get latest version - GitHub' {
         $latestRelease = $releases | Where-Object { $_.isLatest -eq $true }
