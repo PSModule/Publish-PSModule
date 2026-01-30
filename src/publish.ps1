@@ -57,6 +57,7 @@ LogGroup 'Load publish context from environment' {
 
     Write-Host '-------------------------------------------------'
     [PSCustomObject]@{
+        ShouldPublish    = $shouldPublish
         CreateRelease    = $createRelease
         CreatePrerelease = $createPrerelease
         NewVersion       = $newVersion.ToString()
