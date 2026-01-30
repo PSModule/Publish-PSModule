@@ -37,6 +37,7 @@ LogGroup 'Load inputs' {
 }
 
 LogGroup 'Load publish context from environment' {
+    $shouldPublish = $env:PUBLISH_CONTEXT_ShouldPublish -eq 'true'
     $createRelease = $env:PUBLISH_CONTEXT_CreateRelease -eq 'true'
     $createPrerelease = $env:PUBLISH_CONTEXT_CreatePrerelease -eq 'true'
     $newVersionString = $env:PUBLISH_CONTEXT_NewVersion
