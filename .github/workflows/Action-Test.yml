@@ -39,5 +39,5 @@ jobs:
         with:
           Name: PSModuleTest
           WorkingDirectory: tests
-          APIKey: ${{ secrets.APIKEY }}
+          APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] test workflow passes publish API key to local action input intentionally
           WhatIf: true
