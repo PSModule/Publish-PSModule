@@ -76,9 +76,10 @@ runs:
       run: ${{ github.action_path }}/src/publish.ps1
 
     - name: Cleanup Prereleases
-      if: inputs.AutoCleanup == 'true' || inputs.WhatIf == 'true'
+      if: env.PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease != 'true' && (inputs.AutoCleanup == 'true' || inputs.WhatIf == 'true')
       shell: pwsh
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
+        PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag: ${{ env.PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag }}
       run: ${{ github.action_path }}/src/cleanup.ps1

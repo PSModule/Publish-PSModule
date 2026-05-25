@@ -42,7 +42,7 @@ This makes the tested artifact identical to the published artifact (see
 | Name                       | Description                                                                                | Required | Default          |
 | -------------------------- | ------------------------------------------------------------------------------------------ | -------- | ---------------- |
 | `Name`                     | Name of the module. Defaults to the repository name.                                       | No       | Repository name  |
-| `ModulePath`               | Path to the downloaded module folder.                                                      | No       | `outputs/module` |
+| `ModulePath`               | Path to the folder that contains the `<Name>/` module subdirectory (e.g. `outputs/module` must contain `outputs/module/<Name>/`). | No       | `outputs/module` |
 | `APIKey`                   | PowerShell Gallery API key.                                                                | Yes      |                  |
 | `AutoCleanup`              | Delete prerelease tags matching the PR branch after a stable release.                      | No       | `true`           |
 | `WhatIf`                   | Log the changes that would be made without publishing, creating, or deleting anything.    | No       | `false`          |

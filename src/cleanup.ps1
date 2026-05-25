@@ -26,6 +26,11 @@ LogGroup 'Load inputs' {
     Write-Host "PR head ref:      [$prHeadRef]"
     Write-Host "Prerelease name:  [$prereleaseName]"
     Write-Host "WhatIf:           [$whatIf]"
+
+    $publishedReleaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
+    if (-not [string]::IsNullOrWhiteSpace($publishedReleaseTag)) {
+        Write-Host "Published tag:    [$publishedReleaseTag] (excluded from cleanup)"
+    }
 }
 #endregion Load inputs
 
@@ -37,7 +42,7 @@ LogGroup "Find prereleases to cleanup for [$prereleaseName]" {
         exit $LASTEXITCODE
     }
 
-    $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" }
+    $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" -and $_.tagName -ne $publishedReleaseTag }
     $tagsToDelete = @($prereleasesToCleanup | ForEach-Object { $_.tagName } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
     if ($tagsToDelete.Count -eq 0) {

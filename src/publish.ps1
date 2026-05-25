@@ -71,8 +71,12 @@ LogGroup 'Resolve version from manifest' {
     Show-FileContent -Path $manifestFilePath
 
     $manifest = Test-ModuleManifest -Path $manifestFilePath -ErrorAction Stop
-    $moduleVersion = "$($manifest.Version.Major).$($manifest.Version.Minor).$($manifest.Version.Build)"
     $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
+    $moduleVersion = $manifestData.ModuleVersion
+    if (-not ($moduleVersion -match '^\d+\.\d+\.\d+$')) {
+        Write-Error "ModuleVersion [$moduleVersion] must be in Major.Minor.Patch format. Ensure Build-PSModule has stamped the artifact with a final version."
+        exit 1
+    }
     $prerelease = $manifestData.PrivateData.PSData.Prerelease
     if ([string]::IsNullOrWhiteSpace($prerelease)) {
         $prerelease = ''
@@ -91,6 +95,10 @@ LogGroup 'Resolve version from manifest' {
         PRNumber         = $prNumber
         PRHeadRef        = $prHeadRef
     } | Format-List | Out-String
+
+    # Expose publish context to subsequent steps so the cleanup step can gate on release type.
+    "PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease=$($createPrerelease.ToString().ToLower())" | Out-File -Path $env:GITHUB_ENV -Append -Encoding utf8
+    "PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag=$releaseTag" | Out-File -Path $env:GITHUB_ENV -Append -Encoding utf8
 }
 #endregion Resolve version from manifest
 
@@ -194,17 +202,19 @@ LogGroup 'Create GitHub release' {
     if (Test-Path -Path $zipPath) {
         Remove-Item -Path $zipPath -Force
     }
-    Write-Host "Compressing module to [$zipPath]"
-    Compress-Archive -Path (Join-Path $modulePath '*') -DestinationPath $zipPath -Force
-
     if ($whatIf) {
+        Write-Host "WhatIf: Compress-Archive -Path $modulePath -DestinationPath $zipPath -Force"
         Write-Host "WhatIf: gh release upload $releaseTag $zipPath --clobber"
     } else {
+        Write-Host "Compressing module to [$zipPath]"
+        Compress-Archive -Path $modulePath -DestinationPath $zipPath -Force
+
         gh release upload $releaseTag $zipPath --clobber
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to upload module artifact to release [$releaseTag]."
             exit $LASTEXITCODE
         }
+        Remove-Item -Path $zipPath -Force
         Write-Host "::notice title=📦 Attached module artifact to release::$zipFileName"
     }
 
