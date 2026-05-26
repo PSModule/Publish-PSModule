@@ -216,21 +216,22 @@ LogGroup 'Create GitHub release' {
     } else {
         Write-Host "Compressing module to [$zipPath]"
         Compress-Archive -Path $modulePath -DestinationPath $zipPath -Force
-
-        gh release upload $releaseTag $zipPath --clobber
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to upload module artifact to release [$releaseTag]."
-            exit $LASTEXITCODE
+        try {
+            gh release upload $releaseTag $zipPath --clobber
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Failed to upload module artifact to release [$releaseTag]."
+                exit $LASTEXITCODE
+            }
+            Write-Host "::notice title=📦 Attached module artifact to release::$zipFileName"
+        } finally {
+            if (Test-Path -Path $zipPath) {
+                Remove-Item -Path $zipPath -Force
+            }
         }
-        Remove-Item -Path $zipPath -Force
-        Write-Host "::notice title=📦 Attached module artifact to release::$zipFileName"
     }
 
     if ($whatIf) {
-        Write-Host (
-            "gh pr comment $prNumber -b " +
-            "'✅ $releaseType`: GitHub - $name $releaseTag'"
-        )
+        Write-Host "gh pr comment $prNumber -b '✅ $($releaseType): GitHub - $name $releaseTag'"
     } else {
         gh pr comment $prNumber -b "✅ $releaseType`: GitHub - [$name $releaseTag]($releaseURL)"
         if ($LASTEXITCODE -ne 0) {

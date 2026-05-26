@@ -14,7 +14,7 @@ inputs:
     description: Name of the module to publish.
     required: false
   ModulePath:
-    description: Path to the module to publish.
+    description: Path to the folder containing the <Name>/ module subdirectory from Build-PSModule. A module artifact must exist before invoking this action.
     required: false
     default: outputs/module
   APIKey:
