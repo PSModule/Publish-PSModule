@@ -39,14 +39,14 @@ This makes the tested artifact identical to the published artifact (see
 
 ## Inputs
 
-| Name                       | Description                                                                                | Required | Default          |
-| -------------------------- | ------------------------------------------------------------------------------------------ | -------- | ---------------- |
-| `Name`                     | Name of the module. Defaults to the repository name.                                       | No       | Repository name  |
-| `ModulePath`               | Path to the folder that contains the `<Name>/` module subdirectory (e.g. `outputs/module` must contain `outputs/module/<Name>/`). | No       | `outputs/module` |
-| `APIKey`                   | PowerShell Gallery API key.                                                                | Yes      |                  |
-| `AutoCleanup`              | Delete prerelease tags matching the PR branch after a stable release.                      | No       | `true`           |
-| `WhatIf`                   | Log the changes that would be made without publishing, creating, or deleting anything.    | No       | `false`          |
-| `WorkingDirectory`         | The working directory where the script will run from.                                      | No       | `.`              |
-| `UsePRTitleAsReleaseName`  | Use the PR title as the release name (otherwise the version string is used).               | No       | `false`          |
-| `UsePRBodyAsReleaseNotes`  | Use the PR body as the release notes (otherwise `--generate-notes` is used).               | No       | `true`           |
-| `UsePRTitleAsNotesHeading` | Prefix the release notes with the PR title as an H1 heading linking to the PR.             | No       | `true`           |
+| Name                       | Description                                                                             | Required | Default          |
+| -------------------------- | --------------------------------------------------------------------------------------- | -------- | ---------------- |
+| `Name`                     | Name of the module. Defaults to the repository name.                                    | No       | Repository name  |
+| `ModulePath`               | Path to the folder containing the `<Name>/` module subdirectory from Build-PSModule.    | No       | `outputs/module` |
+| `APIKey`                   | PowerShell Gallery API key.                                                             | Yes      |                  |
+| `AutoCleanup`              | Delete prerelease tags matching the PR branch after a stable release.                   | No       | `true`           |
+| `WhatIf`                   | Log the changes that would be made without publishing, creating, or deleting anything.  | No       | `false`          |
+| `WorkingDirectory`         | The working directory where the script will run from.                                   | No       | `.`              |
+| `UsePRTitleAsReleaseName`  | Use the PR title as the release name (otherwise the version string is used).            | No       | `false`          |
+| `UsePRBodyAsReleaseNotes`  | Use the PR body as the release notes (otherwise `--generate-notes` is used).            | No       | `true`           |
+| `UsePRTitleAsNotesHeading` | Prefix the release notes with the PR title as an H1 heading linking to the PR.          | No       | `true`           |

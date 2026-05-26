@@ -14,6 +14,14 @@
     'PSUseDeclaredVarsMoreThanAssignments', 'usePRTitleAsNotesHeading',
     Justification = 'Variable is used in script blocks.'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'prNumber',
+    Justification = 'Variable is used in script blocks.'
+)]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSUseDeclaredVarsMoreThanAssignments', 'prHeadRef',
+    Justification = 'Variable is used in script blocks.'
+)]
 [CmdletBinding()]
 param()
 
@@ -70,11 +78,11 @@ LogGroup 'Resolve version from manifest' {
 
     Show-FileContent -Path $manifestFilePath
 
-    $manifest = Test-ModuleManifest -Path $manifestFilePath -ErrorAction Stop
     $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
     $moduleVersion = $manifestData.ModuleVersion
     if (-not ($moduleVersion -match '^\d+\.\d+\.\d+$')) {
-        Write-Error "ModuleVersion [$moduleVersion] must be in Major.Minor.Patch format. Ensure Build-PSModule has stamped the artifact with a final version."
+        Write-Error ("ModuleVersion [$moduleVersion] must be in Major.Minor.Patch format. " +
+            'Ensure Build-PSModule has stamped the artifact with a final version.')
         exit 1
     }
     $prerelease = $manifestData.PrivateData.PSData.Prerelease
