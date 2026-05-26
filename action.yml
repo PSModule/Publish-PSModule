@@ -2,13 +2,6 @@ name: Publish-PSModule
 description: Publish a pre-versioned PowerShell module artifact to the PowerShell Gallery and GitHub Releases.
 author: PSModule
 
-# BREAKING CHANGE (v3.0.0):
-# This action no longer calculates the next version or mutates the module manifest. The artifact passed in
-# must already contain the final ModuleVersion (and Prerelease tag, if any). Use PSModule/Resolve-PSModuleVersion
-# to compute the version and PSModule/Build-PSModule (v5+) to stamp it before testing. The version-calculation
-# inputs (AutoPatching, IncrementalPrerelease, DatePrereleaseFormat, VersionPrefix, *Labels, ReleaseType, IgnoreLabels)
-# have been removed.
-
 inputs:
   Name:
     description: Name of the module to publish.
