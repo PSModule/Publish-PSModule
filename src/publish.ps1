@@ -92,6 +92,11 @@ LogGroup 'Resolve version from manifest' {
             'Ensure Build-PSModule has stamped the artifact with a final version.')
         exit 1
     }
+    if ($moduleVersion -eq '999.0.0') {
+        Write-Error ("ModuleVersion is the placeholder [999.0.0]. " +
+            'The artifact was not stamped with a real version by the build step.')
+        exit 1
+    }
     $prerelease = $manifestData.PrivateData.PSData.Prerelease
     if ([string]::IsNullOrWhiteSpace($prerelease)) {
         $prerelease = ''
