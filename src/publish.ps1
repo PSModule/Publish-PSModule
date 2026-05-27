@@ -43,9 +43,9 @@ LogGroup 'Load inputs' {
     # the artifact (workspace-root-relative), regardless of WorkingDirectory.
     $modulePathInput = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath
     $modulePathCandidate = if ([System.IO.Path]::IsPathRooted($modulePathInput)) {
-        Join-Path $modulePathInput $name
+        Join-Path -Path $modulePathInput -ChildPath $name
     } else {
-        Join-Path $env:GITHUB_WORKSPACE $modulePathInput $name
+        Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $modulePathInput -AdditionalChildPath $name
     }
     if (-not (Test-Path -Path $modulePathCandidate)) {
         Write-Error ("Module directory not found at [$modulePathCandidate]. " +
@@ -83,7 +83,7 @@ LogGroup 'Load PR information' {
 # to preserve artifact integrity (the tested artifact is identical to the published artifact).
 LogGroup 'Resolve version from manifest' {
     Add-PSModulePath -Path (Split-Path -Path $modulePath -Parent)
-    $manifestFilePath = Join-Path $modulePath "$name.psd1"
+    $manifestFilePath = Join-Path -Path $modulePath -ChildPath "$name.psd1"
     Write-Host "Module manifest file path: [$manifestFilePath]"
     if (-not (Test-Path -Path $manifestFilePath)) {
         Write-Error "Module manifest file not found at [$manifestFilePath]"
@@ -244,7 +244,7 @@ LogGroup 'Create GitHub release' {
     # Attach the built module as a release artifact so consumers can download the exact
     # bytes that were tested and published to the PowerShell Gallery.
     $zipFileName = "$name-$publishPSVersion.zip"
-    $zipPath = Join-Path ([System.IO.Path]::GetTempPath()) $zipFileName
+    $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath $zipFileName
     if (Test-Path -Path $zipPath) {
         Remove-Item -Path $zipPath -Force
     }
