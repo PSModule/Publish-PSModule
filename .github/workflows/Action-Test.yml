@@ -45,7 +45,7 @@ jobs:
       - name: Validate module version is stamped
         shell: pwsh
         run: |
-          $manifestPath = 'tests/outputs/module/PSModuleTest/PSModuleTest.psd1'
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module' 'PSModuleTest' 'PSModuleTest.psd1'
           $manifest = Import-PowerShellDataFile -Path $manifestPath
           $version = $manifest.ModuleVersion
           $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
@@ -100,7 +100,7 @@ jobs:
       - name: Validate prerelease version
         shell: pwsh
         run: |
-          $manifestPath = 'tests/outputs/module-prerelease/PSModuleTest/PSModuleTest.psd1'
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module-prerelease' 'PSModuleTest' 'PSModuleTest.psd1'
           $manifest = Import-PowerShellDataFile -Path $manifestPath
           $version = $manifest.ModuleVersion
           $prerelease = $manifest.PrivateData.PSData.Prerelease
@@ -163,7 +163,7 @@ jobs:
         env:
           PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
         run: |
-          $manifestPath = 'tests/outputs/module-unstamped/PSModuleTest/PSModuleTest.psd1'
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module-unstamped' 'PSModuleTest' 'PSModuleTest.psd1'
           $manifest = Import-PowerShellDataFile -Path $manifestPath
           $version = $manifest.ModuleVersion
           $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
@@ -172,8 +172,8 @@ jobs:
           Write-Host "Release tag from action:    [$releaseTag]"
           Write-Host "Publish step outcome:       [$env:PUBLISH_OUTCOME]"
 
-          if (-not [string]::IsNullOrEmpty($version) -and $version -ne '999.0.0') {
-            Write-Error "Expected missing or placeholder version but got [$version]."
+          if ($version -ne '999.0.0') {
+            Write-Error "Expected placeholder version [999.0.0] but got [$version]."
             exit 1
           }
           if ($env:PUBLISH_OUTCOME -eq 'success') {

@@ -38,7 +38,15 @@ LogGroup 'Load inputs' {
     } else {
         $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
     }
-    $modulePathCandidate = "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name"
+    # Normalize to an absolute path anchored at the workspace root so that
+    # the resolved location agrees with where actions/download-artifact writes
+    # the artifact (workspace-root-relative), regardless of WorkingDirectory.
+    $modulePathInput = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath
+    $modulePathCandidate = if ([System.IO.Path]::IsPathRooted($modulePathInput)) {
+        Join-Path $modulePathInput $name
+    } else {
+        Join-Path $env:GITHUB_WORKSPACE $modulePathInput $name
+    }
     if (-not (Test-Path -Path $modulePathCandidate)) {
         Write-Error ("Module directory not found at [$modulePathCandidate]. " +
             'Ensure the artifact contains a <ModulePath>/<Name>/ subdirectory layout.')

@@ -20,7 +20,7 @@ LogGroup 'Load inputs' {
 
     if ([string]::IsNullOrWhiteSpace($prereleaseName)) {
         Write-Host "No prerelease tag derivable from PR head ref [$prHeadRef]. Nothing to cleanup."
-        return
+        exit 0
     }
 
     Write-Host "PR head ref:      [$prHeadRef]"
