@@ -42,7 +42,9 @@ LogGroup "Find prereleases to cleanup for [$prereleaseName]" {
         exit $LASTEXITCODE
     }
 
-    $prereleasesToCleanup = $releases | Where-Object { $_.tagName -like "*$prereleaseName*" -and $_.tagName -ne $publishedReleaseTag }
+    $prereleasesToCleanup = $releases | Where-Object {
+        $_.isPrerelease -eq $true -and $_.tagName -like "*$prereleaseName*" -and $_.tagName -ne $publishedReleaseTag
+    }
     $tagsToDelete = @($prereleasesToCleanup | ForEach-Object { $_.tagName } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
     if ($tagsToDelete.Count -eq 0) {
