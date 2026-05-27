@@ -78,6 +78,9 @@ LogGroup 'Resolve version from manifest' {
 
     Show-FileContent -Path $manifestFilePath
 
+    $manifest = Test-ModuleManifest -Path $manifestFilePath -ErrorAction Stop
+    Write-Host "Manifest validated: [$($manifest.Name)] v[$($manifest.Version)]"
+
     $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
     $moduleVersion = $manifestData.ModuleVersion
     if (-not ($moduleVersion -match '^\d+\.\d+\.\d+$')) {
@@ -90,6 +93,11 @@ LogGroup 'Resolve version from manifest' {
         $prerelease = ''
         $createPrerelease = $false
     } else {
+        if ($prerelease -notmatch '^[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*$') {
+            Write-Error ("Prerelease label [$prerelease] is not a valid SemVer prerelease identifier. " +
+                'It must contain only alphanumerics, hyphens, and dots as separators.')
+            exit 1
+        }
         $createPrerelease = $true
     }
 
