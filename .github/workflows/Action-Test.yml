@@ -172,8 +172,8 @@ jobs:
           Write-Host "Release tag from action:    [$releaseTag]"
           Write-Host "Publish step outcome:       [$env:PUBLISH_OUTCOME]"
 
-          if ($version -ne '999.0.0') {
-            Write-Error "Expected placeholder version [999.0.0] but got [$version]."
+          if (-not [string]::IsNullOrEmpty($version) -and $version -ne '999.0.0') {
+            Write-Error "Expected missing or placeholder version but got [$version]."
             exit 1
           }
           if ($env:PUBLISH_OUTCOME -eq 'success') {
