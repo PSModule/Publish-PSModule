@@ -1,6 +1,6 @@
 name: Action-Test
 
-run-name: "Action-Test - [${{ github.event.pull_request.title }} #${{ github.event.pull_request.number }}] by @${{ github.actor }}"
+run-name: 'Action-Test - [${{ github.event.pull_request.title }} #${{ github.event.pull_request.number }}] by @${{ github.actor }}'
 
 on:
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
       - name: Upload module artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: module
+          name: module-default
           path: tests/outputs/module
 
       - name: Action-Test
@@ -38,6 +38,149 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModuleTest
+          ArtifactName: module-default
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
+
+      - name: Validate module version is stamped
+        shell: pwsh
+        run: |
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module' 'PSModuleTest' 'PSModuleTest.psd1'
+          $manifest = Import-PowerShellDataFile -Path $manifestPath
+          $version = $manifest.ModuleVersion
+          $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
+
+          Write-Host "Module version in manifest: [$version]"
+          Write-Host "Release tag from action:    [$releaseTag]"
+
+          if ([string]::IsNullOrEmpty($releaseTag)) {
+            Write-Error 'Release tag is empty — the action did not export PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag.'
+            exit 1
+          }
+          if ($version -eq '999.0.0') {
+            Write-Error "Module version is still the placeholder [999.0.0]. The artifact was not stamped with a real version."
+            exit 1
+          }
+          if ($releaseTag -match '^999\.0\.0') {
+            Write-Error "Release tag [$releaseTag] is based on the placeholder version. The artifact was not stamped."
+            exit 1
+          }
+          if ($releaseTag -ne $version) {
+            Write-Error "Release tag [$releaseTag] does not match expected module version [$version]."
+            exit 1
+          }
+          Write-Host "Version validation passed: [$version] (tag: [$releaseTag])"
+
+  ActionTestPrerelease:
+    name: Action-Test - [Prerelease]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Upload module artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: module-prerelease
+          path: tests/outputs/module-prerelease
+
+      - name: Action-Test
+        uses: ./
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          Name: PSModuleTest
+          ArtifactName: module-prerelease
+          ModulePath: outputs/module-prerelease
+          WorkingDirectory: tests
+          APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
+          WhatIf: true
+
+      - name: Validate prerelease version
+        shell: pwsh
+        run: |
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module-prerelease' 'PSModuleTest' 'PSModuleTest.psd1'
+          $manifest = Import-PowerShellDataFile -Path $manifestPath
+          $version = $manifest.ModuleVersion
+          $prerelease = $manifest.PrivateData.PSData.Prerelease
+          $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
+          $isPrerelease = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease
+
+          Write-Host "Module version in manifest: [$version]"
+          Write-Host "Prerelease label:           [$prerelease]"
+          Write-Host "Release tag from action:    [$releaseTag]"
+          Write-Host "IsPrerelease:               [$isPrerelease]"
+
+          if ($version -eq '999.0.0') {
+            Write-Error "Module version is still the placeholder [999.0.0]. The artifact was not stamped with a real version."
+            exit 1
+          }
+          if ([string]::IsNullOrEmpty($prerelease)) {
+            Write-Error 'Prerelease label is missing from manifest.'
+            exit 1
+          }
+          if ($releaseTag -ne "$version-$prerelease") {
+            Write-Error "Release tag [$releaseTag] does not match expected [$version-$prerelease]."
+            exit 1
+          }
+          if ($isPrerelease -ne 'true') {
+            Write-Error "IsPrerelease context should be 'true' but got [$isPrerelease]."
+            exit 1
+          }
+          Write-Host "Prerelease validation passed: [$version-$prerelease] (tag: [$releaseTag])"
+
+  ActionTestUnstamped:
+    name: Action-Test - [Unstamped - expect failure]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Upload module artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: module-unstamped
+          path: tests/outputs/module-unstamped
+
+      - name: Action-Test
+        id: publish
+        uses: ./
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          Name: PSModuleTest
+          ArtifactName: module-unstamped
+          ModulePath: outputs/module-unstamped
+          WorkingDirectory: tests
+          APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
+          WhatIf: true
+
+      - name: Validate unstamped artifact is rejected
+        shell: pwsh
+        env:
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+        run: |
+          $manifestPath = Join-Path $env:GITHUB_WORKSPACE 'outputs' 'module-unstamped' 'PSModuleTest' 'PSModuleTest.psd1'
+          $manifest = Import-PowerShellDataFile -Path $manifestPath
+          $version = $manifest.ModuleVersion
+          $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
+
+          Write-Host "Module version in manifest: [$version]"
+          Write-Host "Release tag from action:    [$releaseTag]"
+          Write-Host "Publish step outcome:       [$env:PUBLISH_OUTCOME]"
+
+          if ($version -ne '999.0.0') {
+            Write-Error "Expected placeholder version [999.0.0] but got [$version]."
+            exit 1
+          }
+          if ($env:PUBLISH_OUTCOME -eq 'success') {
+            Write-Error 'The publish action should have failed for an unstamped artifact but it succeeded.'
+            exit 1
+          }
+          Write-Host 'Unstamped artifact was correctly rejected by the action.'

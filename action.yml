@@ -1,5 +1,5 @@
 name: Publish-PSModule
-description: Publish a PowerShell module to the PowerShell Gallery.
+description: Publish a pre-versioned PowerShell module artifact to the PowerShell Gallery and GitHub Releases.
 author: PSModule
 
 inputs:
@@ -7,7 +7,7 @@ inputs:
     description: Name of the module to publish.
     required: false
   ModulePath:
-    description: Path to the module to publish.
+    description: Path to the folder containing the <Name>/ module subdirectory from Build-PSModule. A module artifact must exist before invoking this action.
     required: false
     default: outputs/module
   APIKey:
@@ -17,42 +17,6 @@ inputs:
     description: Control whether to automatically delete the prerelease tags after the stable release is created.
     required: false
     default: 'true'
-  AutoPatching:
-    description: Control whether to automatically handle patches. If disabled, the action will only create a patch release if the pull request has a 'patch' label.
-    required: false
-    default: 'true'
-  IncrementalPrerelease:
-    description: Control whether to automatically increment the prerelease number. If disabled, the action will ensure only one prerelease exists for a given branch.
-    required: false
-    default: 'true'
-  DatePrereleaseFormat:
-    description: If specified, uses a date based prerelease scheme. The format should be a valid .NET format string like 'yyyyMMddHHmm'.
-    required: false
-    default: ''
-  VersionPrefix:
-    description: The prefix to use for the version number.
-    required: false
-    default: v
-  MajorLabels:
-    description: A comma separated list of labels that trigger a major release.
-    required: false
-    default: major, breaking
-  MinorLabels:
-    description: A comma separated list of labels that trigger a minor release.
-    required: false
-    default: minor, feature
-  PatchLabels:
-    description: A comma separated list of labels that trigger a patch release.
-    required: false
-    default: patch, fix
-  IgnoreLabels:
-    description: A comma separated list of labels that do not trigger a release.
-    required: false
-    default: NoRelease
-  ReleaseType:
-    description: The type of release to create. Values are 'Release' (stable), 'Prerelease', or 'None'.
-    required: false
-    default: Release
   WhatIf:
     description: If specified, the action will only log the changes it would make, but will not actually create or delete any releases or tags.
     required: false
@@ -73,6 +37,10 @@ inputs:
     description: When enabled along with UsePRBodyAsReleaseNotes, the release notes will begin with the pull request title as a H1 heading followed by the pull request body. The title will reference the pull request number.
     required: false
     default: 'true'
+  ArtifactName:
+    description: Name of the uploaded artifact to download. Must match the name used in the upstream upload-artifact step.
+    required: false
+    default: module
 
 runs:
   using: composite
@@ -85,34 +53,13 @@ runs:
       run: |
         Install-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -TrustRepository
 
-    - name: Initialize Publish Context
-      id: init
-      shell: pwsh
-      working-directory: ${{ inputs.WorkingDirectory }}
-      env:
-        PSMODULE_PUBLISH_PSMODULE_INPUT_Name: ${{ inputs.Name }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_AutoCleanup: ${{ inputs.AutoCleanup }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_AutoPatching: ${{ inputs.AutoPatching }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_DatePrereleaseFormat: ${{ inputs.DatePrereleaseFormat }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_IgnoreLabels: ${{ inputs.IgnoreLabels }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_ReleaseType: ${{ inputs.ReleaseType }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_IncrementalPrerelease: ${{ inputs.IncrementalPrerelease }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_MajorLabels: ${{ inputs.MajorLabels }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_MinorLabels: ${{ inputs.MinorLabels }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_PatchLabels: ${{ inputs.PatchLabels }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_VersionPrefix: ${{ inputs.VersionPrefix }}
-        PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
-      run: ${{ github.action_path }}/src/init.ps1
-
     - name: Download module artifact
-      if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
-        name: module
+        name: ${{ inputs.ArtifactName }}
         path: ${{ inputs.ModulePath }}
 
     - name: Publish Module
-      if: env.PUBLISH_CONTEXT_ShouldPublish == 'true' || inputs.WhatIf == 'true'
       shell: pwsh
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
@@ -126,9 +73,10 @@ runs:
       run: ${{ github.action_path }}/src/publish.ps1
 
     - name: Cleanup Prereleases
-      if: env.PUBLISH_CONTEXT_ShouldCleanup == 'true' || inputs.WhatIf == 'true'
+      if: env.PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease != 'true' && (inputs.AutoCleanup == 'true' || inputs.WhatIf == 'true')
       shell: pwsh
       working-directory: ${{ inputs.WorkingDirectory }}
       env:
         PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf: ${{ inputs.WhatIf }}
+        PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag: ${{ env.PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag }}
       run: ${{ github.action_path }}/src/cleanup.ps1
