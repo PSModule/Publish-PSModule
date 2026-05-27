@@ -41,3 +41,24 @@ jobs:
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
+
+      - name: Validate module version is stamped
+        shell: pwsh
+        run: |
+          $manifestPath = 'tests/outputs/module/PSModuleTest/PSModuleTest.psd1'
+          $manifest = Import-PowerShellDataFile -Path $manifestPath
+          $version = $manifest.ModuleVersion
+          $releaseTag = $env:PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag
+
+          Write-Host "Module version in manifest: [$version]"
+          Write-Host "Release tag from action:    [$releaseTag]"
+
+          if ($version -eq '999.0.0') {
+            Write-Error "Module version is still the placeholder [999.0.0]. The artifact was not stamped with a real version."
+            exit 1
+          }
+          if ($releaseTag -match '^999\.0\.0') {
+            Write-Error "Release tag [$releaseTag] is based on the placeholder version. The artifact was not stamped."
+            exit 1
+          }
+          Write-Host "Version validation passed: [$version] (tag: [$releaseTag])"
