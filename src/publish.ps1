@@ -38,7 +38,13 @@ LogGroup 'Load inputs' {
     } else {
         $env:PSMODULE_PUBLISH_PSMODULE_INPUT_Name
     }
-    $modulePath = Resolve-Path -Path "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name" | Select-Object -ExpandProperty Path
+    $modulePathCandidate = "$env:PSMODULE_PUBLISH_PSMODULE_INPUT_ModulePath/$name"
+    if (-not (Test-Path -Path $modulePathCandidate)) {
+        Write-Error ("Module directory not found at [$modulePathCandidate]. " +
+            'Ensure the artifact contains a <ModulePath>/<Name>/ subdirectory layout.')
+        exit 1
+    }
+    $modulePath = Resolve-Path -Path $modulePathCandidate | Select-Object -ExpandProperty Path
     $apiKey = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_APIKey
     $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
     $usePRBodyAsReleaseNotes = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_UsePRBodyAsReleaseNotes -eq 'true'
@@ -93,7 +99,7 @@ LogGroup 'Resolve version from manifest' {
         exit 1
     }
     if ($moduleVersion -eq '999.0.0') {
-        Write-Error ("ModuleVersion is the placeholder [999.0.0]. " +
+        Write-Error ('ModuleVersion is the placeholder [999.0.0]. ' +
             'The artifact was not stamped with a real version by the build step.')
         exit 1
     }
@@ -210,10 +216,16 @@ LogGroup 'Create GitHub release' {
         Write-Host "WhatIf: gh $($releaseCreateCommand -join ' ')"
         $releaseURL = "https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$releaseTag"
     } else {
-        $releaseURL = gh @releaseCreateCommand
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to create the release [$releaseTag]."
-            exit $LASTEXITCODE
+        try {
+            $releaseURL = gh @releaseCreateCommand
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Failed to create the release [$releaseTag]."
+                exit $LASTEXITCODE
+            }
+        } finally {
+            if ($notesFilePath -and (Test-Path -Path $notesFilePath)) {
+                Remove-Item -Path $notesFilePath -Force
+            }
         }
     }
 

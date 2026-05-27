@@ -36,11 +36,12 @@ LogGroup 'Load inputs' {
 
 #region Find prereleases to cleanup
 LogGroup "Find prereleases to cleanup for [$prereleaseName]" {
-    $releases = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName' | ConvertFrom-Json
+    $releaseListOutput = gh release list --json 'createdAt,isDraft,isLatest,isPrerelease,name,publishedAt,tagName'
     if ($LASTEXITCODE -ne 0) {
         Write-Error 'Failed to list releases for the repository.'
         exit $LASTEXITCODE
     }
+    $releases = $releaseListOutput | ConvertFrom-Json
 
     $prereleasesToCleanup = $releases | Where-Object {
         $_.isPrerelease -eq $true -and $_.tagName -like "*$prereleaseName*" -and $_.tagName -ne $publishedReleaseTag

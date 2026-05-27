@@ -53,12 +53,20 @@ jobs:
           Write-Host "Module version in manifest: [$version]"
           Write-Host "Release tag from action:    [$releaseTag]"
 
+          if ([string]::IsNullOrEmpty($releaseTag)) {
+            Write-Error 'Release tag is empty — the action did not export PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag.'
+            exit 1
+          }
           if ($version -eq '999.0.0') {
             Write-Error "Module version is still the placeholder [999.0.0]. The artifact was not stamped with a real version."
             exit 1
           }
           if ($releaseTag -match '^999\.0\.0') {
             Write-Error "Release tag [$releaseTag] is based on the placeholder version. The artifact was not stamped."
+            exit 1
+          }
+          if ($releaseTag -ne $version) {
+            Write-Error "Release tag [$releaseTag] does not match expected module version [$version]."
             exit 1
           }
           Write-Host "Version validation passed: [$version] (tag: [$releaseTag])"
@@ -75,7 +83,7 @@ jobs:
       - name: Upload module artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: module-prerelease
+          name: module
           path: tests/outputs/module-prerelease
 
       - name: Action-Test
@@ -84,7 +92,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModuleTest
-          ModulePath: outputs/module-prerelease
+          ModulePath: outputs/module
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
@@ -134,7 +142,7 @@ jobs:
       - name: Upload module artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: module-unstamped
+          name: module
           path: tests/outputs/module-unstamped
 
       - name: Action-Test
@@ -145,7 +153,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModuleTest
-          ModulePath: outputs/module-unstamped
+          ModulePath: outputs/module
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
