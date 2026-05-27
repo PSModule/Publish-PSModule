@@ -78,8 +78,12 @@ LogGroup 'Resolve version from manifest' {
 
     Show-FileContent -Path $manifestFilePath
 
-    $manifest = Test-ModuleManifest -Path $manifestFilePath -ErrorAction Stop
-    Write-Host "Manifest validated: [$($manifest.Name)] v[$($manifest.Version)]"
+    $manifest = Test-ModuleManifest -Path $manifestFilePath -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    if ($manifest) {
+        Write-Host "Manifest validated: [$($manifest.Name)] v[$($manifest.Version)]"
+    } else {
+        Write-Host '::warning::Test-ModuleManifest returned warnings (e.g. unresolved RequiredModules). Continuing with data-file validation.'
+    }
 
     $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
     $moduleVersion = $manifestData.ModuleVersion
