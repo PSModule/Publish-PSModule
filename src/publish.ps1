@@ -47,7 +47,7 @@ LogGroup 'Load inputs' {
     } else {
         Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $modulePathInput -AdditionalChildPath $name
     }
-    if (-not (Test-Path -Path $modulePathCandidate)) {
+    if (-not (Test-Path -Path $modulePathCandidate -PathType Container)) {
         Write-Error ("Module directory not found at [$modulePathCandidate]. " +
             'Ensure the artifact contains a <ModulePath>/<Name>/ subdirectory layout.')
         exit 1
@@ -99,7 +99,12 @@ LogGroup 'Resolve version from manifest' {
         Write-Host '::warning::Test-ModuleManifest returned warnings (e.g. unresolved RequiredModules). Continuing with data-file validation.'
     }
 
-    $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
+    try {
+        $manifestData = Import-PowerShellDataFile -Path $manifestFilePath
+    } catch {
+        Write-Error "Failed to import manifest data file [$manifestFilePath]: $($_.Exception.Message)"
+        exit 1
+    }
     $moduleVersion = $manifestData.ModuleVersion
     if (-not ($moduleVersion -match '^\d+\.\d+\.\d+$')) {
         Write-Error ("ModuleVersion [$moduleVersion] must be in Major.Minor.Patch format. " +
@@ -235,10 +240,6 @@ LogGroup 'Create GitHub release' {
                 Remove-Item -Path $notesFilePath -Force
             }
         }
-    }
-
-    if ($notesFilePath -and (Test-Path -Path $notesFilePath)) {
-        Remove-Item -Path $notesFilePath -Force
     }
 
     # Attach the built module as a release artifact so consumers can download the exact
