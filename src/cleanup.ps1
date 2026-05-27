@@ -9,7 +9,7 @@ Import-Module -Name 'Helpers' -Force
 LogGroup 'Load inputs' {
     $whatIf = $env:PSMODULE_PUBLISH_PSMODULE_INPUT_WhatIf -eq 'true'
 
-    $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
+    $githubEventJson = Get-Content -Raw $env:GITHUB_EVENT_PATH
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
     if (-not $pull_request) {

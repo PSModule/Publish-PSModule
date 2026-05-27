@@ -1,4 +1,4 @@
-﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute(
     'PSUseDeclaredVarsMoreThanAssignments', 'apiKey',
     Justification = 'Variable is used in script blocks.'
 )]
@@ -53,7 +53,7 @@ LogGroup 'Load inputs' {
 
 #region Load PR information
 LogGroup 'Load PR information' {
-    $githubEventJson = Get-Content $env:GITHUB_EVENT_PATH
+    $githubEventJson = Get-Content -Raw $env:GITHUB_EVENT_PATH
     $githubEvent = $githubEventJson | ConvertFrom-Json
     $pull_request = $githubEvent.pull_request
     if (-not $pull_request) {
@@ -117,7 +117,8 @@ LogGroup 'Resolve version from manifest' {
     } | Format-List | Out-String
 
     # Expose publish context to subsequent steps so the cleanup step can gate on release type.
-    "PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease=$($createPrerelease.ToString().ToLower())" | Out-File -Path $env:GITHUB_ENV -Append -Encoding utf8NoBOM
+    $envLine = "PSMODULE_PUBLISH_PSMODULE_CONTEXT_IsPrerelease=$($createPrerelease.ToString().ToLower())"
+    $envLine | Out-File -Path $env:GITHUB_ENV -Append -Encoding utf8NoBOM
     "PSMODULE_PUBLISH_PSMODULE_CONTEXT_ReleaseTag=$releaseTag" | Out-File -Path $env:GITHUB_ENV -Append -Encoding utf8NoBOM
 }
 #endregion Resolve version from manifest
