@@ -92,7 +92,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModuleTest
-          ModulePath: outputs/module
+          ModulePath: outputs/module-prerelease
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
@@ -153,13 +153,15 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           Name: PSModuleTest
-          ModulePath: outputs/module
+          ModulePath: outputs/module-unstamped
           WorkingDirectory: tests
           APIKey: ${{ secrets.APIKEY }} # zizmor: ignore[secrets-outside-env] saved in org secrets as an intentional choice
           WhatIf: true
 
       - name: Validate unstamped artifact is rejected
         shell: pwsh
+        env:
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
         run: |
           $manifestPath = 'tests/outputs/module-unstamped/PSModuleTest/PSModuleTest.psd1'
           $manifest = Import-PowerShellDataFile -Path $manifestPath
@@ -168,13 +170,13 @@ jobs:
 
           Write-Host "Module version in manifest: [$version]"
           Write-Host "Release tag from action:    [$releaseTag]"
-          Write-Host "Publish step outcome:       [${{ steps.publish.outcome }}]"
+          Write-Host "Publish step outcome:       [$env:PUBLISH_OUTCOME]"
 
           if ($version -ne '999.0.0') {
             Write-Error "Expected placeholder version [999.0.0] but got [$version]."
             exit 1
           }
-          if ('${{ steps.publish.outcome }}' -eq 'success') {
+          if ($env:PUBLISH_OUTCOME -eq 'success') {
             Write-Error 'The publish action should have failed for an unstamped artifact but it succeeded.'
             exit 1
           }
